@@ -1,0 +1,92 @@
+# Waste Detection System Configuration
+# This file contains all configurable parameters for the waste detection system
+
+model:
+  # Supported YOLO model versions
+  supported_versions: ["v8n", "v10n", "v11n"]
+  
+  # Training parameters
+  default_epochs: 50
+  default_batch_size: 16
+  min_epochs: 1
+  max_epochs: 1000
+  min_batch_size: 1
+  max_batch_size: 128
+  
+  # Image processing
+  default_img_size: [640, 640]
+  supported_img_sizes: [[416, 416], [512, 512], [640, 640], [832, 832], [1024, 1024]]
+  
+  # Model export settings
+  onnx_opset: 12
+  onnx_simplify: true
+  
+  # Inference settings
+  default_conf_threshold: 0.25
+  min_conf_threshold: 0.0
+  max_conf_threshold: 1.0
+
+dataset:
+  # Roboflow settings
+  roboflow_project: "abcd12efghijklmn34opqrstuvwxyza1bc2de3f_segmentation"
+  roboflow_version: "1"
+  dataset_type: "coco-segmentation"
+  
+  # Directory structure
+  default_dataset_dir: "datasets"
+  default_model_dir: "results/runs"
+  default_onnx_dir: "results/onnx_models"
+  default_rknn_dir: "results/rknn_models"
+  
+  # File patterns
+  supported_image_extensions: [".jpg", ".jpeg", ".png", ".bmp"]
+  supported_video_extensions: [".mp4", ".avi", ".mov"]
+
+fuzzy:
+  # Membership function parameters for area classification
+  area_percent_ranges:
+    sedikit: [0, 0, 5]
+    sedang: [3, 10, 20]
+    banyak: [15, 100, 100]
+  
+  # Classification score ranges
+  classification_score_ranges:
+    low: [0, 0, 30]
+    medium: [20, 50, 80]
+    high: [70, 100, 100]
+  
+  # Classification thresholds
+  sedikit_threshold: 33.0
+  sedang_threshold: 66.0
+  
+  # Fallback thresholds
+  fallback_sedikit_threshold: 1.0
+  fallback_sedang_threshold: 10.0
+
+logging:
+  # Logging configuration
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_logging: true
+  console_logging: true
+  log_file: "waste_detection_system.log"
+  max_log_size_mb: 10
+  backup_count: 5
+
+system:
+  # Environment settings
+  environment: "colab"  # development, production, testing, colab
+  
+  # Performance settings
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: true
+  
+  # File operations
+  create_backups: true
+  backup_retention_days: 30
+  
+  # API settings
+  request_timeout: 300
+  max_retries: 3
+  retry_delay: 5 
