@@ -14,8 +14,8 @@ model:
   max_batch_size: 128
   
   # Image processing
-  default_img_size: [640, 640]
-  supported_img_sizes: [[416, 416], [512, 512], [640, 640], [832, 832], [1024, 1024]]
+  default_img_size: [640, 640]  # Will be converted to tuple in code
+  supported_img_sizes: [[416, 416], [512, 512], [640, 640], [832, 832], [1024, 1024]]  # Will be converted to tuples in code
   
   # Model export settings
   onnx_opset: 12

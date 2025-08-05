@@ -1,0 +1,261 @@
+# CUDA Version Management Guide
+
+This guide explains how to manage CUDA versions for both local Windows and Google Colab environments.
+
+## Understanding CUDA Versions
+
+### Two Different CUDA Versions
+
+1. **NVIDIA Driver CUDA Version** (shown in `nvidia-smi`)
+   - This is the CUDA version supported by your NVIDIA driver
+   - You cannot change this without updating your GPU driver
+   - Example: CUDA 12.9 in `nvidia-smi`
+
+2. **CUDA Toolkit Version** (shown in `nvcc --version`)
+   - This is the CUDA development toolkit version
+   - Can be installed/updated independently
+   - Example: CUDA 12.4 toolkit
+
+### Why You See CUDA 12.9 in nvidia-smi
+
+The CUDA version shown in `nvidia-smi` represents the **maximum CUDA version** your NVIDIA driver supports. This is **not** the actual CUDA toolkit version you're using.
+
+## Windows CUDA Version Management
+
+### Option 1: Use Existing CUDA 12.4 Installation (Recommended)
+
+If you have CUDA 12.4 installed at `D:\Programs\Nvidia\CUDA\v12.4`:
+
+1. **Use the setup script**
+   ```bash
+   python setup_cuda_environment.py
+   ```
+
+2. **Or manually set environment variables**
+   ```bash
+   # Set environment variables
+   set CUDA_HOME=D:\Programs\Nvidia\CUDA\v12.4
+   set CUDA_PATH=D:\Programs\Nvidia\CUDA\v12.4
+   set PATH=%CUDA_HOME%\bin;%PATH%
+   
+   # Install PyTorch with CUDA 12.4
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   ```
+
+3. **Verify Installation**
+   ```bash
+   python -c "import torch; print(f'PyTorch CUDA: {torch.version.cuda}')"
+   nvcc --version
+   ```
+
+### Option 2: Install CUDA 12.4 Toolkit (If not already installed)
+
+If you need to install CUDA 12.4:
+
+1. **Install CUDA 12.4 Toolkit**
+   ```bash
+   # Download from NVIDIA website
+   https://developer.nvidia.com/cuda-12-4-0-download-archive
+   
+   # Or use conda
+   conda install cudatoolkit=12.4
+   ```
+
+2. **Install PyTorch with CUDA 12.4**
+   ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   ```
+
+3. **Verify Installation**
+   ```bash
+   python -c "import torch; print(f'PyTorch CUDA: {torch.version.cuda}')"
+   nvcc --version
+   ```
+
+### Option 2: Use Available CUDA Version
+
+If you want to use the CUDA version your driver supports (12.9):
+
+1. **Install PyTorch with CUDA 12.1** (closest supported version)
+   ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   ```
+
+2. **Verify Installation**
+   ```bash
+   python -c "import torch; print(f'PyTorch CUDA: {torch.version.cuda}')"
+   ```
+
+### Option 3: Use CPU Version (Fallback)
+
+If CUDA causes issues:
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+```
+
+## Google Colab CUDA Management
+
+### Current Colab CUDA Setup
+
+Google Colab typically provides:
+- **NVIDIA Driver**: CUDA 12.1+ (varies by runtime)
+- **CUDA Toolkit**: Usually matches driver version
+- **PyTorch**: Pre-installed with CUDA support
+
+### Force Specific CUDA Version in Colab
+
+```python
+# Check current CUDA version
+!nvidia-smi
+!nvcc --version
+
+# Install specific PyTorch CUDA version
+!pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# Verify installation
+import torch
+print(f"PyTorch CUDA: {torch.version.cuda}")
+print(f"CUDA available: {torch.cuda.is_available()}")
+```
+
+## Automatic CUDA Detection Script
+
+Use the updated `install_cuda.py` script:
+
+```bash
+python install_cuda.py
+```
+
+This script will:
+1. Detect your CUDA toolkit version (`nvcc`)
+2. Detect your NVIDIA driver version (`nvidia-smi`)
+3. Install the appropriate PyTorch CUDA version
+4. Verify the installation
+
+## Troubleshooting
+
+### Issue: CUDA Version Mismatch
+
+**Symptoms:**
+- `nvidia-smi` shows CUDA 12.9
+- `nvcc --version` shows CUDA 12.4
+- PyTorch installation fails
+
+**Solutions:**
+1. **Use the CUDA toolkit version** (12.4) for PyTorch installation
+2. **Update NVIDIA driver** to match desired CUDA version
+3. **Use CPU version** as fallback
+
+### Issue: PyTorch CUDA Not Available
+
+**Symptoms:**
+- `torch.cuda.is_available()` returns `False`
+- CUDA operations fail
+
+**Solutions:**
+1. **Reinstall PyTorch with correct CUDA version**
+   ```bash
+   pip uninstall torch torchvision torchaudio
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   ```
+
+2. **Check CUDA installation**
+   ```bash
+   nvcc --version
+   nvidia-smi
+   ```
+
+3. **Verify PyTorch installation**
+   ```python
+   import torch
+   print(torch.version.cuda)
+   print(torch.cuda.is_available())
+   ```
+
+### Issue: Multiple CUDA Versions
+
+**Symptoms:**
+- Multiple CUDA installations
+- Conflicting versions
+
+**Solutions:**
+1. **Use virtual environments**
+   ```bash
+   conda create -n cuda124 python=3.11
+   conda activate cuda124
+   conda install cudatoolkit=12.4
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   ```
+
+2. **Set CUDA environment variables**
+   ```bash
+   set CUDA_HOME=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4
+   set PATH=%CUDA_HOME%\bin;%PATH%
+   ```
+
+## Recommended Setup
+
+### For Local Windows (CUDA 12.4)
+```bash
+# 1. Install CUDA 12.4 Toolkit
+# Download from NVIDIA website
+
+# 2. Install PyTorch with CUDA 12.4
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# 3. Verify installation
+python -c "import torch; print(f'CUDA: {torch.version.cuda}, Available: {torch.cuda.is_available()}')"
+```
+
+### For Google Colab
+```python
+# 1. Check current setup
+!nvidia-smi
+!nvcc --version
+
+# 2. Install PyTorch with appropriate CUDA version
+!pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# 3. Verify installation
+import torch
+print(f"PyTorch CUDA: {torch.version.cuda}")
+print(f"CUDA available: {torch.cuda.is_available()}")
+```
+
+## Environment Variables
+
+Set these environment variables for consistent CUDA behavior:
+
+```bash
+# Windows
+set CUDA_HOME=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4
+set PATH=%CUDA_HOME%\bin;%PATH%
+
+# Linux/Mac
+export CUDA_HOME=/usr/local/cuda-12.4
+export PATH=$CUDA_HOME/bin:$PATH
+```
+
+## Verification Commands
+
+```bash
+# Check NVIDIA driver
+nvidia-smi
+
+# Check CUDA toolkit
+nvcc --version
+
+# Check PyTorch CUDA
+python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.version.cuda}'); print(f'Available: {torch.cuda.is_available()}')"
+
+# Check GPU memory
+python -c "import torch; print(f'GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB')"
+```
+
+## Summary
+
+- **nvidia-smi CUDA version** = Maximum supported by driver
+- **nvcc CUDA version** = Actual toolkit version
+- **PyTorch CUDA version** = Should match toolkit version
+- **For CUDA 12.4**: Install CUDA 12.4 toolkit + PyTorch cu124
+- **For compatibility**: Use the closest supported PyTorch CUDA version 

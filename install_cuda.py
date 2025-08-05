@@ -2,6 +2,7 @@
 """
 CUDA Installation Helper Script
 Helps users install PyTorch with the correct CUDA version for their system.
+Supports CUDA 12.4 and other versions.
 """
 
 import subprocess
@@ -23,9 +24,26 @@ def check_cuda_version():
         return None
     return None
 
+def check_nvidia_smi():
+    """Check NVIDIA driver version using nvidia-smi."""
+    try:
+        result = subprocess.run(['nvidia-smi'], 
+                              capture_output=True, text=True, check=True)
+        output = result.stdout
+        # Look for CUDA Version in nvidia-smi output
+        for line in output.split('\n'):
+            if 'CUDA Version:' in line:
+                version = line.split('CUDA Version:')[1].strip()
+                return version
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return None
+
 def get_pytorch_cuda_url(cuda_version):
     """Get the appropriate PyTorch installation URL based on CUDA version."""
     cuda_mapping = {
+        '12.4': 'cu124',
+        '12.1': 'cu121',
         '11.8': 'cu118',
         '11.7': 'cu117', 
         '11.6': 'cu116',
@@ -46,7 +64,15 @@ def install_pytorch_cuda():
     """Install PyTorch with appropriate CUDA support."""
     print("🔍 Checking CUDA installation...")
     
-    cuda_version = check_cuda_version()
+    # Check both nvcc and nvidia-smi
+    nvcc_version = check_cuda_version()
+    nvidia_smi_version = check_nvidia_smi()
+    
+    print(f"📋 CUDA Toolkit (nvcc): {nvcc_version or 'Not found'}")
+    print(f"📋 NVIDIA Driver (nvidia-smi): {nvidia_smi_version or 'Not found'}")
+    
+    # Use nvcc version if available, otherwise use nvidia-smi version
+    cuda_version = nvcc_version or nvidia_smi_version
     
     if cuda_version:
         print(f"✅ CUDA {cuda_version} detected")
@@ -54,6 +80,7 @@ def install_pytorch_cuda():
         
         if pytorch_cuda == 'cpu':
             print(f"⚠️  CUDA {cuda_version} not supported, installing CPU version")
+            print("   Supported CUDA versions: 12.4, 12.1, 11.8, 11.7, 11.6, 11.5, 11.4, 11.3, 11.2, 11.1, 11.0, 10.2, 10.1, 10.0")
             pytorch_cuda = 'cpu'
         else:
             print(f"🚀 Installing PyTorch with CUDA {pytorch_cuda} support")

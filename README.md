@@ -98,6 +98,82 @@ python -c "from main_colab import WasteDetectionSystemColab; system = WasteDetec
    ```bash
    # Copy and edit secrets template
    cp secrets.yaml.example secrets.yaml
+   ```
+
+2. **Validate configuration**:
+   ```bash
+   python validate_secrets.py
+   ```
+
+3. **Run tests**:
+   ```bash
+   python run_tests.py
+   ```
+
+4. **Start the system**:
+   ```bash
+   python main_colab.py
+   ```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Error: "img_size must be a tuple of two integers"**
+- This has been fixed in the latest version
+- The configuration now automatically converts lists to tuples
+- If you encounter this error, run: `python test_config_fix.py` to verify the fix
+
+**CUDA Issues**
+- Run `python check_cuda_versions.py` to diagnose CUDA problems
+- Use `python setup_cuda_environment.py` for local CUDA setup
+- For Google Colab, CUDA is typically pre-configured
+
+**Configuration Issues**
+- Check `config.yaml` for valid parameters
+- Run `python validate_secrets.py` to verify secrets
+- Use `python test_config_fix.py` to test configuration loading
+
+### 2. Installation
+
+#### Option A: Quick Setup (CPU/Google Colab)
+```bash
+# Clone the repository
+git clone <repository-url>
+cd pmu-instance-sampah-fuzzy
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+#### Option B: CUDA Setup (Local GPU Training)
+```bash
+# Clone the repository
+git clone <repository-url>
+cd pmu-instance-sampah-fuzzy
+
+# Install PyTorch with CUDA support
+python install_cuda.py
+
+# Or manually install CUDA-enabled PyTorch:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+#### Verify CUDA Installation
+```bash
+# Test CUDA setup
+python test_cuda.py
+
+# Check CUDA status in your system
+python -c "from main_colab import WasteDetectionSystemColab; system = WasteDetectionSystemColab(); print(system.get_cuda_status())"
+```
+
+### 3. Configuration
+
+1. **Set up secrets**:
+   ```bash
+   # Copy and edit secrets template
+   cp secrets.yaml.example secrets.yaml
    # Edit secrets.yaml with your API keys
    ```
 

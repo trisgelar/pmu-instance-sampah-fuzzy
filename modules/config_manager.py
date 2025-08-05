@@ -182,6 +182,11 @@ class ConfigManager:
                 model_data = config_data['model']
                 for key, value in model_data.items():
                     if hasattr(self.model_config, key):
+                        # Convert lists to tuples for img_size fields
+                        if key == 'default_img_size' and isinstance(value, list):
+                            value = tuple(value)
+                        elif key == 'supported_img_sizes' and isinstance(value, list):
+                            value = [tuple(item) if isinstance(item, list) else item for item in value]
                         setattr(self.model_config, key, value)
             
             # Apply dataset configuration
