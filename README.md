@@ -15,6 +15,7 @@ This system combines state-of-the-art computer vision techniques with fuzzy logi
 - **Security**: Secure secrets management and validation
 - **Testing**: Comprehensive unit test suite
 - **Google Colab Integration**: Optimized for Colab environment
+- **Model Export**: ONNX and RKNN model conversion (optional)
 
 ## 🏗️ System Architecture
 
@@ -34,12 +35,18 @@ pmu-instance-sampah-fuzzy/
 │   ├── rknn_converter.py     # RKNN model conversion
 │   ├── drive_manager.py      # Google Drive integration
 │   └── exceptions.py         # Custom exceptions
-├── tests/                    # Unit tests
-│   ├── test_config_manager.py
-│   ├── test_fuzzy_area_classifier.py
-│   ├── test_exceptions.py
-│   ├── test_secrets_validation.py
-│   └── test_main_colab.py
+├── setup/                    # Setup utilities
+│   └── cuda/                 # CUDA setup and installation
+│       ├── install_cuda.py   # Automated CUDA installation
+│       ├── setup_cuda_environment.py  # Environment configuration
+│       ├── setup_cuda_env.bat # Windows batch setup
+│       └── requirements-*.txt # CUDA dependencies
+├── tests/                    # Test suite
+│   ├── unit/                 # Unit tests
+│   ├── integration/          # Integration tests
+│   ├── diagnostic/           # Diagnostic scripts
+│   ├── fixes/                # Fix verification
+│   └── utils/                # Utility tests
 ├── run_tests.py              # Test runner
 ├── validate_secrets.py       # Secrets validation
 └── docs/                     # Documentation
@@ -57,6 +64,7 @@ pmu-instance-sampah-fuzzy/
 - Google Colab (recommended) or local GPU setup
 - Roboflow API key
 - NVIDIA GPU with CUDA support (optional, for local training)
+- RKNN-Toolkit2 (optional, for RKNN model conversion)
 
 ### 2. Installation
 
@@ -76,8 +84,14 @@ pip install -r requirements.txt
 git clone <repository-url>
 cd pmu-instance-sampah-fuzzy
 
-# Install PyTorch with CUDA support
-python install_cuda.py
+# Automated CUDA installation
+python setup/cuda/install_cuda.py
+
+# Or setup existing CUDA environment
+python setup/cuda/setup_cuda_environment.py
+
+# Or use Windows batch file
+setup/cuda/setup_cuda_env.bat
 
 # Or manually install CUDA-enabled PyTorch:
 # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
@@ -86,7 +100,7 @@ python install_cuda.py
 #### Verify CUDA Installation
 ```bash
 # Test CUDA setup
-python test_cuda.py
+python tests/utils/test_cuda.py
 
 # Check CUDA status in your system
 python -c "from main_colab import WasteDetectionSystemColab; system = WasteDetectionSystemColab(); print(system.get_cuda_status())"
@@ -133,6 +147,30 @@ python -c "from main_colab import WasteDetectionSystemColab; system = WasteDetec
 - Check `config.yaml` for valid parameters
 - Run `python validate_secrets.py` to verify secrets
 - Use `python test_config_fix.py` to test configuration loading
+
+**RKNN-Toolkit2 Issues**
+- RKNN-Toolkit2 is optional and only needed for RKNN model conversion
+- If you get RKNN import errors, the system will skip RKNN conversion
+- To install RKNN-Toolkit2:
+  ```bash
+  # Download RKNN-Toolkit2 repository
+  git clone -b v2.3.0 https://github.com/airockchip/rknn-toolkit2.git
+  # Download RKNN Model Zoo repository
+  git clone -b v2.3.0 https://github.com/airockchip/rknn_model_zoo.git
+
+  # Enter rknn-toolkit2 directory
+  cd rknn-toolkit2/rknn-toolkit2/packages/x86_64/
+  # Please select the appropriate requirements file based on your Python version; here it is for python3.11
+  pip3 install -r requirements_cp11-2.3.0.txt
+  # Please select the appropriate wheel installation package based on your Python version and processor architecture:
+  pip3 install ./rknn_toolkit2-2.3.0-cp11-cp11-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  ```
+
+**PyTorch 2.6+ Model Loading Issues**
+- If you get "Weights only load failed" or "Unsupported global" errors, this is due to PyTorch 2.6+ security changes
+- The system now automatically handles this with safe globals and fallback methods
+- Test the fix: `python test_pytorch_compatibility.py`
+- If issues persist, try: `pip install --upgrade ultralytics`
 
 ### 2. Installation
 

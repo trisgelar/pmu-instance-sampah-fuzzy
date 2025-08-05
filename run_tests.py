@@ -15,13 +15,14 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-def discover_and_run_tests(test_pattern="test_*.py", verbosity=2):
+def discover_and_run_tests(test_pattern="test_*.py", verbosity=2, test_category=None):
     """
     Discover and run all tests in the tests directory.
     
     Args:
         test_pattern (str): Pattern to match test files
         verbosity (int): Test verbosity level (1=quiet, 2=normal, 3=verbose)
+        test_category (str): Specific test category to run (unit, integration, diagnostic, fixes, utils)
     
     Returns:
         unittest.TestResult: Test results
@@ -33,9 +34,19 @@ def discover_and_run_tests(test_pattern="test_*.py", verbosity=2):
         print(f"❌ Tests directory not found: {tests_dir}")
         return None
     
+    # If specific category is requested, run only that category
+    if test_category:
+        category_dir = tests_dir / test_category
+        if not category_dir.exists():
+            print(f"❌ Test category directory not found: {category_dir}")
+            return None
+        search_dir = category_dir
+    else:
+        search_dir = tests_dir
+    
     # Create test suite
     loader = unittest.TestLoader()
-    suite = loader.discover(str(tests_dir), pattern=test_pattern)
+    suite = loader.discover(str(search_dir), pattern=test_pattern)
     
     # Run tests
     runner = unittest.TextTestRunner(verbosity=verbosity)
@@ -287,7 +298,7 @@ def main():
     """Main test runner function."""
     parser = argparse.ArgumentParser(description="Run waste detection system tests")
     parser.add_argument("--test", help="Run specific test (e.g., config_manager, fuzzy_logic)")
-    parser.add_argument("--category", choices=["all", "security", "config", "fuzzy", "exceptions", "integration"], 
+    parser.add_argument("--category", choices=["all", "unit", "integration", "diagnostic", "fixes", "utils", "security", "config", "fuzzy", "exceptions"], 
                        default="all", help="Run tests by category")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--quiet", "-q", action="store_true", help="Quiet output")
@@ -331,6 +342,36 @@ def main():
                     print(f"❌ {category_name} failed to run: {e}")
                     results.append((category_name, None, 0))
         
+        elif args.category == "unit":
+            print("🧪 Running unit tests...")
+            result, duration = discover_and_run_tests(test_category="unit", verbosity=verbosity)
+            if result:
+                results.append(("Unit Tests", result, duration))
+        
+        elif args.category == "integration":
+            print("🔗 Running integration tests...")
+            result, duration = discover_and_run_tests(test_category="integration", verbosity=verbosity)
+            if result:
+                results.append(("Integration Tests", result, duration))
+        
+        elif args.category == "diagnostic":
+            print("🔍 Running diagnostic tests...")
+            result, duration = discover_and_run_tests(test_category="diagnostic", verbosity=verbosity)
+            if result:
+                results.append(("Diagnostic Tests", result, duration))
+        
+        elif args.category == "fixes":
+            print("🔧 Running fix verification tests...")
+            result, duration = discover_and_run_tests(test_category="fixes", verbosity=verbosity)
+            if result:
+                results.append(("Fix Verification Tests", result, duration))
+        
+        elif args.category == "utils":
+            print("🛠️ Running utility tests...")
+            result, duration = discover_and_run_tests(test_category="utils", verbosity=verbosity)
+            if result:
+                results.append(("Utility Tests", result, duration))
+        
         elif args.category == "security":
             result, duration = run_security_tests()
             if result:
@@ -350,11 +391,6 @@ def main():
             result, duration = run_exception_tests()
             if result:
                 results.append(("Exception Tests", result, duration))
-        
-        elif args.category == "integration":
-            result, duration = run_integration_tests()
-            if result:
-                results.append(("Integration Tests", result, duration))
     
     # Print summary
     if results:

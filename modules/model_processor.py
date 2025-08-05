@@ -139,12 +139,41 @@ class ModelProcessor:
 
             logger.info(f"Starting YOLO{model_version} (segment) training")
             
-            # Load model
+            # Load model with PyTorch 2.6+ compatibility
             try:
+                import torch
+                from ultralytics.nn.tasks import SegmentationModel
+                
+                # Add safe globals for PyTorch 2.6+ compatibility
+                torch.serialization.add_safe_globals([SegmentationModel])
+                
                 model = YOLO(f"yolo{model_version}-seg.pt")
                 logger.info(f"Loaded YOLO{model_version} segmentation model")
             except Exception as e:
-                raise ModelError(f"Failed to load YOLO{model_version} model: {str(e)}") from e
+                # Fallback: try with weights_only=False for older PyTorch compatibility
+                try:
+                    logger.warning(f"First attempt failed, trying with weights_only=False: {str(e)}")
+                    import torch
+                    from ultralytics.nn.tasks import SegmentationModel
+                    
+                    # Add safe globals and try with weights_only=False
+                    torch.serialization.add_safe_globals([SegmentationModel])
+                    
+                    # Temporarily patch torch.load to use weights_only=False
+                    original_load = torch.load
+                    def safe_load(*args, **kwargs):
+                        kwargs['weights_only'] = False
+                        return original_load(*args, **kwargs)
+                    
+                    import builtins
+                    builtins.__dict__['torch_load'] = original_load
+                    torch.load = safe_load
+                    
+                    model = YOLO(f"yolo{model_version}-seg.pt")
+                    torch.load = original_load  # Restore original
+                    logger.info(f"Loaded YOLO{model_version} segmentation model (fallback method)")
+                except Exception as e2:
+                    raise ModelError(f"Failed to load YOLO{model_version} model: {str(e2)}") from e2
 
             # Train model
             train_name = f"segment_train_{model_version}"
@@ -171,7 +200,7 @@ class ModelProcessor:
             logger.info(f"Exporting PyTorch model ({pytorch_model_path}) to ONNX at {onnx_output_path}")
             
             try:
-                model.export(format="onnx", imgsz=self.img_size, opset=12, simplify=True, filename=onnx_output_path)
+                model.export(format="onnx", imgsz=self.img_size, opset=12, simplify=True, file=onnx_output_path)
                 
                 if os.path.exists(onnx_output_path):
                     logger.info(f"ONNX model successfully exported to: {onnx_output_path}")

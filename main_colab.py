@@ -520,17 +520,17 @@ def main():
         # %tensorboard --logdir runs
 
         # Langkah 1: Persiapan Dataset (jalankan sekali)
-        try:
-            system_colab.dataset_manager.prepare_datasets()
-            system_colab.dataset_manager.zip_datasets_folder()
-        except Exception as e:
-            logger.error(f"Dataset preparation failed: {str(e)}")
+        # try:
+        #     system_colab.dataset_manager.prepare_datasets()
+        #     system_colab.dataset_manager.zip_datasets_folder()
+        # except Exception as e:
+        #     logger.error(f"Dataset preparation failed: {str(e)}")
 
         # --- Eksekusi Pipeline untuk YOLOv8n Instance Segmentation ---
         try:
             run_dir_v8n = system_colab.train_and_export_model("v8n")
-            system_colab.analyze_training_run(run_dir_v8n, "v8n")
-            system_colab.run_inference_and_visualization(run_dir_v8n, "v8n", num_inference_images=6)
+            #system_colab.analyze_training_run(run_dir_v8n, "v8n")
+            #system_colab.run_inference_and_visualization(run_dir_v8n, "v8n", num_inference_images=6)
             # system_colab.convert_and_zip_rknn_models("v8n")
         except Exception as e:
             logger.error(f"YOLOv8n pipeline failed: {str(e)}")

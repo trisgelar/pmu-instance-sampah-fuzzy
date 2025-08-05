@@ -2,6 +2,7 @@
 import os
 import shutil
 import yaml
+import json
 import logging
 from typing import Optional, Dict, Any
 from roboflow import Roboflow
@@ -230,14 +231,11 @@ class DatasetManager:
                 logger.warning(f"Failed to move dataset contents: {str(e)}")
                 # Continue anyway as the dataset might still be usable
 
-            # Determine correct paths
-            path_train, path_val, path_test = self._determine_dataset_paths(is_dataset_target_path)
-            
             # Get class names
             class_names = self._get_class_names()
             
-            # Create data.yaml
-            self._create_data_yaml(is_dataset_target_path, path_train, path_val, path_test, class_names)
+            # Create data.yaml with standard YOLO format (pointing to image directories)
+            self._create_data_yaml_standard(is_dataset_target_path, class_names)
             
             logger.info(f"Dataset Instance Segmentation ready at: {is_dataset_target_path}")
             logger.info(f"data.yaml file created at: {self.IS_DATA_YAML}")
@@ -275,21 +273,31 @@ class DatasetManager:
     def _get_class_names(self) -> list[str]:
         """
         Get class names from Roboflow project or use default for local dataset.
+        Only returns 'sampah' label as that's the main label for this project.
         
         Returns:
-            list: List of class names
+            list: List of class names (only 'sampah')
         """
         try:
             rf = Roboflow(api_key=self.ROBOFLOW_API_KEY)
             project = rf.workspace().project(self.ROBOFLOW_IS_PROJECT)
-            class_names = list(project.classes.keys())
-            class_names.sort()
-            logger.info(f"Retrieved {len(class_names)} class names from Roboflow")
-            return class_names
+            all_class_names = list(project.classes.keys())
+            logger.info(f"Retrieved {len(all_class_names)} class names from Roboflow: {all_class_names}")
+            
+            # Filter to only use 'sampah' label and ignore other categories
+            if 'sampah' in all_class_names:
+                logger.info("Using 'sampah' label as requested (ignoring other categories)")
+                return ["sampah"]
+            else:
+                logger.warning("'sampah' label not found in Roboflow classes")
+                logger.warning(f"Available categories: {all_class_names}")
+                logger.warning("Using first available class as fallback")
+                return [all_class_names[0]] if all_class_names else ["sampah"]
+                
         except Exception as e:
-            logger.warning(f"Failed to get class names from Roboflow: {str(e)}. Using default class names for waste detection.")
-            # Default class names for waste detection
-            return ["waste", "litter", "trash"]
+            logger.warning(f"Failed to get class names from Roboflow: {str(e)}. Using 'sampah' as default.")
+            # Default to 'sampah' since that's the actual label in your Roboflow project
+            return ["sampah"]
 
     def _create_data_yaml(self, dataset_path: str, path_train: str, path_val: str, 
                           path_test: str, class_names: list[str]) -> None:
@@ -317,6 +325,94 @@ class DatasetManager:
             logger.info(f"data.yaml created successfully at {self.IS_DATA_YAML}")
         except Exception as e:
             raise FileOperationError(f"Failed to create data.yaml: {str(e)}") from e
+
+
+
+    def _create_data_yaml_standard(self, dataset_path: str, class_names: list[str]) -> None:
+        """
+        Create data.yaml file for YOLO training with standard format.
+        This method points to image directories and uses the COCO annotations that come with Roboflow.
+        Forces all segmentations to use 'sampah' category.
+        
+        Args:
+            dataset_path: Path to dataset
+            class_names: List of class names
+        """
+        # Determine the correct paths for train, validation, and test sets
+        path_train, path_val, path_test = self._determine_dataset_paths(dataset_path)
+        
+        # Force all segmentations to use 'sampah' category
+        self._normalize_coco_annotations(dataset_path)
+        
+        is_data_yaml_content = {
+            'path': os.path.abspath(dataset_path),
+            'train': path_train,
+            'val': path_val,
+            'test': path_test,
+            'names': {i: name for i, name in enumerate(class_names)}
+        }
+        
+        try:
+            with open(self.IS_DATA_YAML, 'w', encoding='utf-8') as f:
+                yaml.dump(is_data_yaml_content, f, sort_keys=False, default_flow_style=False)
+            logger.info(f"data.yaml with standard YOLO format created successfully at {self.IS_DATA_YAML}")
+            logger.info(f"Using paths: train={path_train}, val={path_val}, test={path_test}")
+        except Exception as e:
+            raise FileOperationError(f"Failed to create data.yaml: {str(e)}") from e
+
+    def _normalize_coco_annotations(self, dataset_path: str) -> None:
+        """
+        Normalize COCO annotations to use only 'sampah' category.
+        This converts all segmentations to use the 'sampah' category ID.
+        
+        Args:
+            dataset_path: Path to dataset
+        """
+        logger.info("Normalizing COCO annotations to use only 'sampah' category")
+        
+        for split in ['train', 'valid', 'test']:
+            split_path = os.path.join(dataset_path, split)
+            coco_file = os.path.join(split_path, "_annotations.coco.json")
+            
+            if not os.path.exists(coco_file):
+                logger.warning(f"COCO file not found for {split}")
+                continue
+            
+            try:
+                with open(coco_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Find 'sampah' category ID
+                sampah_category_id = None
+                for cat in data.get('categories', []):
+                    if cat.get('name') == 'sampah':
+                        sampah_category_id = cat.get('id')
+                        break
+                
+                if sampah_category_id is None:
+                    logger.warning(f"No 'sampah' category found in {split}, skipping")
+                    continue
+                
+                # Update all annotations to use 'sampah' category
+                annotations_updated = 0
+                for ann in data.get('annotations', []):
+                    old_category_id = ann.get('category_id')
+                    if old_category_id != sampah_category_id:
+                        ann['category_id'] = sampah_category_id
+                        annotations_updated += 1
+                
+                # Update categories to only include 'sampah'
+                data['categories'] = [cat for cat in data.get('categories', []) 
+                                   if cat.get('name') == 'sampah']
+                
+                # Save updated annotations
+                with open(coco_file, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                
+                logger.info(f"Updated {split}: {annotations_updated} annotations normalized to 'sampah' category")
+                
+            except Exception as e:
+                logger.error(f"Failed to normalize {split} annotations: {str(e)}")
 
     def zip_datasets_folder(self) -> bool:
         """
