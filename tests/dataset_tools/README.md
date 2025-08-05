@@ -23,6 +23,8 @@ tests/dataset_tools/
 ├── extract_and_check_dataset.py # Extract and verify dataset structure
 ├── final_verification.py   # Final dataset verification for YOLO training
 ├── fix_yolo_coordinates.py # Fix coordinate normalization issues
+├── check_segmentation_format.py # Check dataset format for segmentation
+├── fix_segmentation_labels.py # Convert labels to segmentation format
 ├── test_dataset_fix_integration.py # Integration test for DatasetManager
 └── run_dataset_fix_test.py # Test runner script
 ```
@@ -173,6 +175,69 @@ results = fix_yolo_coordinates()
 - 🎯 Fixes "out of bounds coordinates" training errors
 - 📊 Reports coordinate statistics
 
+### 8. Segmentation Format Check (`check_segmentation_format.py`)
+
+**Purpose**: Check if dataset is properly formatted for YOLO segmentation training
+
+**Usage**:
+```bash
+# Command line
+python -m tests.dataset_tools.check_segmentation_format
+
+# Python import
+from tests.dataset_tools import check_segmentation_format
+results = check_segmentation_format()
+```
+
+**What it does**:
+- 🔍 Analyzes dataset structure for segmentation compatibility
+- 📋 Checks COCO annotations for segmentation data
+- 📄 Validates data.yaml configuration
+- 🏷️ Verifies YOLO label format
+- ✅ Confirms readiness for segmentation training
+
+### 9. Segmentation Labels Fix (`fix_segmentation_labels.py`)
+
+**Purpose**: Convert YOLO detection labels to segmentation labels
+
+**Usage**:
+```bash
+# Command line
+python -m tests.dataset_tools.fix_segmentation_labels
+
+# Python import
+from tests.dataset_tools import fix_segmentation_labels
+results = fix_segmentation_labels()
+```
+
+**What it does**:
+- 🔄 Converts detection labels to segmentation format
+- 📐 Uses polygon coordinates from COCO annotations
+- 🎯 Normalizes coordinates to 0-1 range
+- ✅ Creates proper YOLO segmentation labels
+- 📊 Reports conversion statistics
+
+### 10. Segmentation Integration Test (`test_segmentation_integration.py`)
+
+**Purpose**: Test the integration of segmentation fixing into DatasetManager class
+
+**Usage**:
+```bash
+# Command line
+python -m tests.dataset_tools.test_segmentation_integration
+
+# Python import
+from tests.dataset_tools import test_segmentation_integration
+success = test_segmentation_integration()
+```
+
+**What it tests**:
+- ✅ Polygon coordinate normalization
+- ✅ Invalid polygon handling
+- ✅ Out of bounds coordinate clamping
+- ✅ Integration with DatasetManager class
+- ✅ Method availability and functionality
+
 ## 🚀 Quick Start
 
 ### Step 1: Diagnose Your Dataset
@@ -276,6 +341,8 @@ datasets/your_dataset/
 | **Quick fix** | `fix_dataset_ultralytics.py` |
 | **Manual fix** | `fix_dataset_classes.py` |
 | **Coordinate issues** | `fix_yolo_coordinates.py` |
+| **Segmentation format** | `check_segmentation_format.py` |
+| **Segmentation labels** | `fix_segmentation_labels.py` |
 | **Final verification** | `final_verification.py` |
 | **Validation** | `dataset_validator.py` |
 | **Troubleshooting** | `diagnose_dataset.py` |

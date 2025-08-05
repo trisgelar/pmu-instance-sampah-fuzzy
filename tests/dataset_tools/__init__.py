@@ -12,6 +12,8 @@ Tools:
 - extract_and_check_dataset.py: Extract and verify dataset structure
 - final_verification.py: Final dataset verification for YOLO training
 - fix_yolo_coordinates.py: Fix coordinate normalization issues
+- check_segmentation_format.py: Check dataset format for segmentation
+- fix_segmentation_labels.py: Convert labels to segmentation format
 """
 
 from .diagnose_dataset import diagnose_dataset
@@ -21,6 +23,9 @@ from .dataset_validator import validate_dataset
 from .extract_and_check_dataset import extract_and_check_dataset
 from .final_verification import final_verification
 from .fix_yolo_coordinates import fix_yolo_coordinates
+from .check_segmentation_format import check_segmentation_format
+from .fix_segmentation_labels import convert_to_segmentation_labels
+from .test_segmentation_integration import test_segmentation_integration
 
 __all__ = [
     'diagnose_dataset',
@@ -29,5 +34,8 @@ __all__ = [
     'validate_dataset',
     'extract_and_check_dataset',
     'final_verification',
-    'fix_yolo_coordinates'
+    'fix_yolo_coordinates',
+    'check_segmentation_format',
+    'convert_to_segmentation_labels',
+    'test_segmentation_integration'
 ] 

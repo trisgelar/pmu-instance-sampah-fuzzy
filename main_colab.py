@@ -520,57 +520,64 @@ def main():
         # %tensorboard --logdir runs
 
         #Langkah 1: Persiapan Dataset dengan Normalisasi Ultralytics (jalankan sekali)
-        try:
-            # Prepare datasets with integrated Ultralytics normalization
-            success = system_colab.dataset_manager.prepare_datasets()
-            if success:
-                logger.info("✅ Dataset preparation completed with Ultralytics normalization")
+        # try:
+        #     # Prepare datasets with integrated Ultralytics normalization
+        #     success = system_colab.dataset_manager.prepare_datasets()
+        #     if success:
+        #         logger.info("✅ Dataset preparation completed with Ultralytics normalization")
                 
-                # Validate the prepared dataset
-                validation_results = system_colab.dataset_manager.validate_dataset_format()
-                if not validation_results['issues']:
-                    logger.info("✅ Dataset validation passed - ready for training!")
-                else:
-                    logger.warning("⚠️ Dataset validation issues found:")
-                    for issue in validation_results['issues']:
-                        logger.warning(f"  - {issue}")
+        #         # Validate the prepared dataset
+        #         validation_results = system_colab.dataset_manager.validate_dataset_format()
+        #         if not validation_results['issues']:
+        #             logger.info("✅ Dataset validation passed - ready for training!")
+        #         else:
+        #             logger.warning("⚠️ Dataset validation issues found:")
+        #             for issue in validation_results['issues']:
+        #                 logger.warning(f"  - {issue}")
                 
-                # Zip datasets for backup
-                system_colab.dataset_manager.zip_datasets_folder()
-            else:
-                logger.error("❌ Dataset preparation failed")
+        #         # Zip datasets for backup
+        #         system_colab.dataset_manager.zip_datasets_folder()
+        #     else:
+        #         logger.error("❌ Dataset preparation failed")
                 
-        except Exception as e:
-            logger.error(f"Dataset preparation failed: {str(e)}")
+        # except Exception as e:
+        #     logger.error(f"Dataset preparation failed: {str(e)}")
             
-        # Alternative: Fix existing dataset if preparation failed
-        try:
-            logger.info("🔧 Attempting to fix existing dataset...")
+        # # Alternative: Fix existing dataset if preparation failed
+        # try:
+        #     logger.info("🔧 Attempting to fix existing dataset...")
             
-            # First, fix path issues in data.yaml
-            path_fix_success = system_colab.dataset_manager.fix_data_yaml_paths()
-            if path_fix_success:
-                logger.info("✅ Data.yaml path fixing completed successfully")
-            else:
-                logger.warning("⚠️ Data.yaml path fixing failed or not needed")
+        #     # First, fix path issues in data.yaml
+        #     path_fix_success = system_colab.dataset_manager.fix_data_yaml_paths()
+        #     if path_fix_success:
+        #         logger.info("✅ Data.yaml path fixing completed successfully")
+        #     else:
+        #         logger.warning("⚠️ Data.yaml path fixing failed or not needed")
             
-            # Then fix dataset classes
-            fix_success = system_colab.dataset_manager.fix_dataset_classes()
-            if fix_success:
-                logger.info("✅ Dataset fixing completed successfully")
-            else:
-                logger.error("❌ Dataset fixing failed")
-        except Exception as e:
-            logger.error(f"Dataset fixing failed: {str(e)}")
+        #     # Then fix dataset classes and segmentation labels
+        #     fix_success = system_colab.dataset_manager.fix_dataset_classes()
+        #     if fix_success:
+        #         logger.info("✅ Dataset fixing completed successfully")
+        #         
+        #         # Additional: Fix segmentation labels specifically
+        #         seg_fix_success = system_colab.dataset_manager.fix_segmentation_labels()
+        #         if seg_fix_success:
+        #             logger.info("✅ Segmentation labels fixed successfully")
+        #         else:
+        #             logger.warning("⚠️ Segmentation label fixing failed or not needed")
+        #     else:
+        #         logger.error("❌ Dataset fixing failed")
+        # except Exception as e:
+        #     logger.error(f"Dataset fixing failed: {str(e)}")
 
         #--- Eksekusi Pipeline untuk YOLOv8n Instance Segmentation ---
-        # try:
-        #     run_dir_v8n = system_colab.train_and_export_model("v8n")
-        #     #system_colab.analyze_training_run(run_dir_v8n, "v8n")
-        #     #system_colab.run_inference_and_visualization(run_dir_v8n, "v8n", num_inference_images=6)
-        #     # system_colab.convert_and_zip_rknn_models("v8n")
-        # except Exception as e:
-        #     logger.error(f"YOLOv8n pipeline failed: {str(e)}")
+        try:
+            run_dir_v8n = system_colab.train_and_export_model("v8n")
+            #system_colab.analyze_training_run(run_dir_v8n, "v8n")
+            #system_colab.run_inference_and_visualization(run_dir_v8n, "v8n", num_inference_images=6)
+            # system_colab.convert_and_zip_rknn_models("v8n")
+        except Exception as e:
+            logger.error(f"YOLOv8n pipeline failed: {str(e)}")
         
         # --- Eksekusi Pipeline untuk YOLOv10n Instance Segmentation ---
         # try:
