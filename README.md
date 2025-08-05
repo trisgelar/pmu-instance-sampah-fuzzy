@@ -68,20 +68,40 @@ pmu-instance-sampah-fuzzy/
 
 ### 2. Installation
 
-#### Option A: Quick Setup (CPU/Google Colab)
+#### Option A: Google Colab (Recommended)
+```python
+# Quick setup in Google Colab
+!git clone https://github.com/trisgelar/pmu-instance-sampah-fuzzy.git
+%cd pmu-instance-sampah-fuzzy
+!pip install -r requirements.txt
+
+# Create secrets.yaml with your API key
+import yaml
+with open('secrets.yaml', 'w') as f:
+    yaml.dump({'roboflow_api_key': 'YOUR_API_KEY'}, f)
+
+# Initialize and run
+from main_colab import WasteDetectionSystemColab
+system = WasteDetectionSystemColab()
+system.train_and_export_model("v8n", epochs=50, batch_size=16)
+```
+
+**📖 For detailed Colab instructions, see [COLAB_EXECUTION_GUIDE.md](docs/COLAB_EXECUTION_GUIDE.md)**
+
+#### Option B: Local Setup (CPU/GPU)
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/trisgelar/pmu-instance-sampah-fuzzy.git
 cd pmu-instance-sampah-fuzzy
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-#### Option B: CUDA Setup (Local GPU Training)
+#### Option C: CUDA Setup (Local GPU Training)
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/trisgelar/pmu-instance-sampah-fuzzy.git
 cd pmu-instance-sampah-fuzzy
 
 # Automated CUDA installation
@@ -325,6 +345,16 @@ python run_tests.py --category integration
 # Run specific test
 python run_tests.py --test config_manager
 
+# Run dataset fix integration test
+python tests/dataset_tools/test_dataset_fix_integration.py
+# or
+python tests/dataset_tools/run_dataset_fix_test.py
+
+# Run dataset tools individually
+python tests/dataset_tools/extract_and_check_dataset.py
+python tests/dataset_tools/fix_yolo_coordinates.py
+python tests/dataset_tools/final_verification.py
+
 # Verbose output
 python run_tests.py --verbose
 
@@ -339,6 +369,8 @@ python run_tests.py --quiet
 - **Fuzzy Logic Tests**: Classification logic, input validation, performance
 - **Exception Tests**: Custom exception hierarchy, error handling
 - **Integration Tests**: System-wide functionality, workflows
+- **Dataset Fix Integration Test**: Ultralytics-based dataset normalization and validation
+- **Dataset Tools**: Extract, verify, fix coordinates, and validate datasets for YOLO training
 
 ## 🔒 Security
 

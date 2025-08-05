@@ -186,10 +186,184 @@ class DatasetManager:
             logger.error(error_msg)
             raise FileOperationError(error_msg) from e
 
+    def _normalize_dataset_ultralytics(self, dataset_path: str) -> bool:
+        """
+        Normalize dataset using Ultralytics tools to ensure proper YOLO format.
+        This method converts COCO annotations to YOLO format and ensures only 'sampah' class is used.
+        
+        Args:
+            dataset_path: Path to the dataset directory
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        logger.info("Normalizing dataset using Ultralytics tools...")
+        
+        try:
+            # Create backup of original dataset
+            backup_path = f"{dataset_path}_backup"
+            if os.path.exists(backup_path):
+                shutil.rmtree(backup_path)
+            shutil.copytree(dataset_path, backup_path)
+            logger.info(f"Created backup at: {backup_path}")
+            
+            # Convert each split to YOLO format using the proven approach
+            for split in ['train', 'valid', 'test']:
+                split_path = os.path.join(dataset_path, split)
+                coco_file = os.path.join(split_path, "_annotations.coco.json")
+                
+                if not os.path.exists(coco_file):
+                    logger.warning(f"COCO file not found for {split}: {coco_file}")
+                    continue
+                
+                logger.info(f"Processing {split} split...")
+                
+                # Create images and labels directories
+                images_dir = os.path.join(split_path, "images")
+                labels_dir = os.path.join(split_path, "labels")
+                
+                os.makedirs(images_dir, exist_ok=True)
+                os.makedirs(labels_dir, exist_ok=True)
+                
+                # Move images to images directory
+                image_files = []
+                for file in os.listdir(split_path):
+                    if file.lower().endswith(('.jpg', '.jpeg', '.png')) and file != "_annotations.coco.json":
+                        src = os.path.join(split_path, file)
+                        dst = os.path.join(images_dir, file)
+                        shutil.move(src, dst)
+                        image_files.append(file)
+                
+                logger.info(f"  📸 Moved {len(image_files)} images to images/")
+                
+                # Parse COCO JSON and create YOLO labels
+                try:
+                    with open(coco_file, 'r', encoding='utf-8') as f:
+                        coco_data = json.load(f)
+                    
+                    # Create a mapping from image ID to image info
+                    image_id_to_info = {}
+                    for image in coco_data.get('images', []):
+                        image_id = image['id']
+                        image_id_to_info[image_id] = {
+                            'filename': image['file_name'],
+                            'width': image['width'],
+                            'height': image['height']
+                        }
+                    
+                    # Group annotations by image_id
+                    annotations_by_image = {}
+                    for annotation in coco_data.get('annotations', []):
+                        image_id = annotation['image_id']
+                        if image_id not in annotations_by_image:
+                            annotations_by_image[image_id] = []
+                        annotations_by_image[image_id].append(annotation)
+                    
+                    # Process each image
+                    label_count = 0
+                    for image_id, image_info in image_id_to_info.items():
+                        filename = image_info['filename']
+                        img_width = image_info['width']
+                        img_height = image_info['height']
+                        base_name = os.path.splitext(filename)[0]
+                        
+                        # Create YOLO label file
+                        label_file = os.path.join(labels_dir, f"{base_name}.txt")
+                        
+                        # Get annotations for this image
+                        annotations = annotations_by_image.get(image_id, [])
+                        
+                        # Create YOLO format lines
+                        yolo_lines = []
+                        for annotation in annotations:
+                            # Get bounding box
+                            bbox = annotation.get('bbox', [0, 0, 100, 100])
+                            x, y, w, h = bbox
+                            
+                            # Validate image dimensions
+                            if img_width <= 0 or img_height <= 0:
+                                logger.warning(f"    ⚠️ Invalid image dimensions for {filename}: {img_width}x{img_height}")
+                                continue
+                            
+                            # Convert to YOLO format (normalized coordinates)
+                            # YOLO format: class_id x_center y_center width height
+                            x_center = (x + w/2) / img_width
+                            y_center = (y + h/2) / img_height
+                            width = w / img_width
+                            height = h / img_height
+                            
+                            # Validate coordinates are within bounds
+                            if (0 <= x_center <= 1 and 0 <= y_center <= 1 and 
+                                0 <= width <= 1 and 0 <= height <= 1):
+                                # Use class 0 for 'sampah'
+                                yolo_line = f"0 {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}\n"
+                                yolo_lines.append(yolo_line)
+                            else:
+                                logger.warning(f"    ⚠️ Skipping annotation with out-of-bounds coordinates for {filename}")
+                                logger.warning(f"      x_center={x_center:.4f}, y_center={y_center:.4f}, width={width:.4f}, height={height:.4f}")
+                        
+                        # Write the label file
+                        with open(label_file, 'w') as f:
+                            f.writelines(yolo_lines)
+                        
+                        if yolo_lines:
+                            label_count += 1
+                    
+                    logger.info(f"  🏷️ Created {label_count} label files")
+                    
+                except Exception as e:
+                    logger.error(f"  ❌ Error processing COCO JSON for {split}: {e}")
+                    continue
+            
+            # Create proper data.yaml for YOLO format
+            self._create_yolo_data_yaml(dataset_path)
+            
+            logger.info("✅ Dataset normalization completed successfully")
+            return True
+            
+        except ImportError:
+            logger.error("❌ Ultralytics not installed. Install with: pip install ultralytics")
+            return False
+        except Exception as e:
+            logger.error(f"❌ Dataset normalization failed: {str(e)}")
+            return False
+
+    def _create_yolo_data_yaml(self, dataset_path: str) -> None:
+        """
+        Create YOLO format data.yaml file with only 'sampah' class.
+        
+        Args:
+            dataset_path: Path to the dataset directory
+        """
+        # Determine the correct paths for train, validation, and test sets
+        path_train, path_val, path_test = self._determine_dataset_paths(dataset_path)
+        
+        # Use relative path to avoid platform-specific absolute path issues
+        yolo_data_yaml = {
+            'path': '.',  # Use relative path
+            'train': path_train,
+            'val': path_val,
+            'test': path_test,
+            'names': {0: 'sampah'}  # Only 'sampah' class
+        }
+        
+        data_yaml_path = os.path.join(dataset_path, "data.yaml")
+        
+        try:
+            with open(data_yaml_path, 'w', encoding='utf-8') as f:
+                yaml.dump(yolo_data_yaml, f, sort_keys=False, default_flow_style=False)
+            
+            logger.info(f"✅ Created YOLO data.yaml: {data_yaml_path}")
+            logger.info(f"Using paths: train={path_train}, val={path_val}, test={path_test}")
+            
+        except Exception as e:
+            raise FileOperationError(f"Failed to create YOLO data.yaml: {str(e)}") from e
+
     def prepare_datasets(self) -> bool:
         """
         Mempersiapkan dataset untuk Instance Segmentation.
         Checks for existing dataset.zip first, then downloads from Roboflow if needed.
+        Uses Ultralytics tools to ensure proper YOLO format with only 'sampah' class.
         
         Returns:
             bool: True if successful, False otherwise
@@ -231,11 +405,12 @@ class DatasetManager:
                 logger.warning(f"Failed to move dataset contents: {str(e)}")
                 # Continue anyway as the dataset might still be usable
 
-            # Get class names
-            class_names = self._get_class_names()
-            
-            # Create data.yaml with standard YOLO format (pointing to image directories)
-            self._create_data_yaml_standard(is_dataset_target_path, class_names)
+            # Normalize dataset using Ultralytics tools
+            if not self._normalize_dataset_ultralytics(is_dataset_target_path):
+                logger.warning("Dataset normalization failed, but continuing with original format")
+                # Fallback to original method
+                class_names = self._get_class_names()
+                self._create_data_yaml_standard(is_dataset_target_path, class_names)
             
             logger.info(f"Dataset Instance Segmentation ready at: {is_dataset_target_path}")
             logger.info(f"data.yaml file created at: {self.IS_DATA_YAML}")
@@ -311,8 +486,9 @@ class DatasetManager:
             path_test: Test data path
             class_names: List of class names
         """
+        # Use relative path to avoid platform-specific absolute path issues
         is_data_yaml_content = {
-            'path': os.path.abspath(dataset_path),
+            'path': '.',  # Use relative path instead of absolute
             'train': path_train,
             'val': path_val,
             'test': path_test,
@@ -325,8 +501,6 @@ class DatasetManager:
             logger.info(f"data.yaml created successfully at {self.IS_DATA_YAML}")
         except Exception as e:
             raise FileOperationError(f"Failed to create data.yaml: {str(e)}") from e
-
-
 
     def _create_data_yaml_standard(self, dataset_path: str, class_names: list[str]) -> None:
         """
@@ -344,8 +518,9 @@ class DatasetManager:
         # Force all segmentations to use 'sampah' category
         self._normalize_coco_annotations(dataset_path)
         
+        # Use relative path to avoid platform-specific absolute path issues
         is_data_yaml_content = {
-            'path': os.path.abspath(dataset_path),
+            'path': '.',  # Use relative path instead of absolute
             'train': path_train,
             'val': path_val,
             'test': path_test,
@@ -438,3 +613,187 @@ class DatasetManager:
             error_msg = f"Failed to compress datasets folder '{source_folder}': {str(e)}"
             logger.error(error_msg)
             raise FileOperationError(error_msg) from e
+
+    def fix_dataset_classes(self, dataset_path: Optional[str] = None) -> bool:
+        """
+        Fix dataset class issues using Ultralytics tools.
+        This method can be called independently to fix existing datasets.
+        
+        Args:
+            dataset_path: Path to dataset directory (uses default if None)
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        if dataset_path is None:
+            dataset_path = os.path.join(self.DATASET_DIR, self.ROBOFLOW_IS_PROJECT)
+        
+        if not os.path.exists(dataset_path):
+            logger.error(f"Dataset path not found: {dataset_path}")
+            return False
+        
+        logger.info(f"Fixing dataset classes in: {dataset_path}")
+        
+        try:
+            # Check if dataset needs fixing
+            data_yaml_path = os.path.join(dataset_path, "data.yaml")
+            needs_fixing = False
+            
+            if os.path.exists(data_yaml_path):
+                with open(data_yaml_path, 'r', encoding='utf-8') as f:
+                    data = yaml.safe_load(f)
+                    names = data.get('names', {})
+                    path_value = data.get('path', '')
+                    
+                    # Check for absolute path issues
+                    if path_value and (path_value.startswith('D:\\') or path_value.startswith('/') or '\\' in path_value):
+                        logger.info("Dataset has absolute path in data.yaml, fixing...")
+                        needs_fixing = True
+                    elif names != {0: 'sampah'}:
+                        logger.info("Dataset has incorrect class configuration, fixing...")
+                        needs_fixing = True
+            else:
+                logger.info("No data.yaml found, creating proper YOLO format...")
+                needs_fixing = True
+            
+            if needs_fixing:
+                return self._normalize_dataset_ultralytics(dataset_path)
+            else:
+                logger.info("Dataset already has correct class configuration")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Failed to fix dataset classes: {str(e)}")
+            return False
+
+    def validate_dataset_format(self, dataset_path: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Validate dataset format and provide detailed information.
+        
+        Args:
+            dataset_path: Path to dataset directory (uses default if None)
+            
+        Returns:
+            Dict[str, Any]: Validation results
+        """
+        if dataset_path is None:
+            dataset_path = os.path.join(self.DATASET_DIR, self.ROBOFLOW_IS_PROJECT)
+        
+        results = {
+            'dataset_path': dataset_path,
+            'exists': os.path.exists(dataset_path),
+            'data_yaml_exists': False,
+            'data_yaml_content': None,
+            'splits': {},
+            'issues': [],
+            'recommendations': []
+        }
+        
+        if not results['exists']:
+            results['issues'].append("Dataset directory does not exist")
+            return results
+
+    def fix_data_yaml_paths(self, dataset_path: Optional[str] = None) -> bool:
+        """
+        Fix absolute paths in existing data.yaml files to use relative paths.
+        
+        Args:
+            dataset_path: Path to dataset directory (uses default if None)
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        if dataset_path is None:
+            dataset_path = os.path.join(self.DATASET_DIR, self.ROBOFLOW_IS_PROJECT)
+        
+        if not os.path.exists(dataset_path):
+            logger.error(f"Dataset path not found: {dataset_path}")
+            return False
+        
+        data_yaml_path = os.path.join(dataset_path, "data.yaml")
+        
+        if not os.path.exists(data_yaml_path):
+            logger.warning(f"No data.yaml found at: {data_yaml_path}")
+            return False
+        
+        try:
+            # Read current data.yaml
+            with open(data_yaml_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f)
+            
+            # Check if path is absolute
+            current_path = data.get('path', '')
+            if current_path and (current_path.startswith('D:\\') or current_path.startswith('/') or '\\' in current_path):
+                logger.info(f"Found absolute path in data.yaml: {current_path}")
+                logger.info("Converting to relative path...")
+                
+                # Update to relative path
+                data['path'] = '.'
+                
+                # Write back the updated data.yaml
+                with open(data_yaml_path, 'w', encoding='utf-8') as f:
+                    yaml.dump(data, f, sort_keys=False, default_flow_style=False)
+                
+                logger.info("✅ Successfully converted absolute path to relative path")
+                return True
+            else:
+                logger.info("Data.yaml already uses relative path or no path found")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Failed to fix data.yaml paths: {str(e)}")
+            return False
+        
+        # Check data.yaml
+        data_yaml_path = os.path.join(dataset_path, "data.yaml")
+        results['data_yaml_exists'] = os.path.exists(data_yaml_path)
+        
+        if results['data_yaml_exists']:
+            try:
+                with open(data_yaml_path, 'r', encoding='utf-8') as f:
+                    data = yaml.safe_load(f)
+                    results['data_yaml_content'] = data
+                    
+                    # Check class names
+                    names = data.get('names', {})
+                    if names != {0: 'sampah'}:
+                        results['issues'].append(f"Incorrect class names: {names}")
+                        results['recommendations'].append("Run fix_dataset_classes() to correct class configuration")
+                    
+                    # Check paths
+                    for split in ['train', 'val', 'test']:
+                        split_path = data.get(split, '')
+                        if split_path:
+                            full_path = os.path.join(dataset_path, split_path)
+                            if not os.path.exists(full_path):
+                                results['issues'].append(f"Path not found: {full_path}")
+                            else:
+                                results['splits'][split] = {
+                                    'path': full_path,
+                                    'exists': True,
+                                    'images_count': 0,
+                                    'labels_count': 0
+                                }
+                                
+                                # Count files
+                                images_dir = os.path.join(full_path, "images")
+                                labels_dir = os.path.join(full_path, "labels")
+                                
+                                if os.path.exists(images_dir):
+                                    results['splits'][split]['images_count'] = len([
+                                        f for f in os.listdir(images_dir) 
+                                        if f.lower().endswith(('.jpg', '.jpeg', '.png'))
+                                    ])
+                                
+                                if os.path.exists(labels_dir):
+                                    results['splits'][split]['labels_count'] = len([
+                                        f for f in os.listdir(labels_dir) 
+                                        if f.endswith('.txt')
+                                    ])
+            except Exception as e:
+                results['issues'].append(f"Error reading data.yaml: {str(e)}")
+        else:
+            results['issues'].append("data.yaml not found")
+            results['recommendations'].append("Run fix_dataset_classes() to create proper YOLO format")
+        
+        return results

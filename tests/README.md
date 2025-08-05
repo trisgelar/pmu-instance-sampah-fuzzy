@@ -13,17 +13,33 @@ tests/
 │   └── test_secrets_validation.py
 ├── integration/             # Integration tests for system-wide functionality
 │   ├── test_main_colab.py
-│   └── test_dataset_fix.py
+│   ├── test_dataset_fix.py
+│   ├── test_dataset_fix_verification.py
+│   ├── test_path_fix.py
+│   └── test_coco_structure_verification.py
+
 ├── diagnostic/              # Diagnostic scripts for troubleshooting
 │   ├── check_categories.py
 │   ├── check_dataset_annotations.py
 │   ├── check_polygon_segmentation.py
-│   └── check_cuda_versions.py
+│   ├── check_cuda_versions.py
+│   └── check_yolo_label_matching.py
 ├── fixes/                   # Fix verification scripts
 │   ├── test_config_fix.py
 │   ├── test_onnx_export_fix.py
 │   ├── test_sampah_normalization.py
 │   └── test_sampah_only.py
+├── dataset_tools/           # Dataset diagnosis and fix tools
+│   ├── diagnose_dataset.py
+│   ├── fix_dataset_classes.py
+│   ├── fix_dataset_ultralytics.py
+│   ├── dataset_validator.py
+│   ├── extract_and_check_dataset.py
+│   ├── final_verification.py
+│   ├── fix_yolo_coordinates.py
+│   ├── test_dataset_fix_integration.py
+│   ├── run_dataset_fix_test.py
+│   └── README.md
 └── utils/                   # Utility test scripts
     ├── test_cuda.py
     └── verify_python311_compatibility.py
@@ -39,17 +55,24 @@ tests/
 ### Integration Tests (`integration/`)
 - **Purpose**: Test how different modules work together
 - **Scope**: End-to-end workflows and system-wide functionality
-- **Examples**: Main system initialization, dataset processing workflows
+- **Examples**: Main system initialization, dataset processing workflows, dataset fix verification, path fixing
+
+
 
 ### Diagnostic Tests (`diagnostic/`)
 - **Purpose**: Troubleshoot specific issues and verify system state
 - **Scope**: Problem identification and debugging
-- **Examples**: Dataset validation, CUDA version checking, category analysis
+- **Examples**: Dataset validation, CUDA version checking, category analysis, YOLO label matching
 
 ### Fix Verification Tests (`fixes/`)
 - **Purpose**: Verify that specific fixes work correctly
 - **Scope**: Targeted testing of bug fixes and improvements
 - **Examples**: ONNX export fixes, configuration fixes, normalization fixes
+
+### Dataset Tools (`dataset_tools/`)
+- **Purpose**: Diagnose and fix dataset issues
+- **Scope**: COCO to YOLO conversion, class configuration, validation, integration testing, coordinate fixing, dataset extraction and verification
+- **Examples**: Dataset diagnosis, class normalization, format conversion, coordinate normalization, dataset extraction, final verification, dataset fix integration tests
 
 ### Utility Tests (`utils/`)
 - **Purpose**: Environment and compatibility verification
@@ -77,6 +100,9 @@ python run_tests.py --category diagnostic
 # Fix verification tests only
 python run_tests.py --category fixes
 
+# Dataset tools only
+python run_tests.py --category dataset_tools
+
 # Utility tests only
 python run_tests.py --category utils
 ```
@@ -85,6 +111,9 @@ python run_tests.py --category utils
 ```bash
 # Run a specific test file
 python run_tests.py --test config_manager
+
+# Run dataset fix integration test
+python tests/dataset_tools/test_dataset_fix_integration.py
 
 # Run with verbose output
 python run_tests.py --category unit --verbose
@@ -117,12 +146,14 @@ python run_tests.py --category exceptions
    - `integration/` for system-wide tests
    - `diagnostic/` for troubleshooting scripts
    - `fixes/` for bug fix verification
+   - `dataset_tools/` for dataset diagnosis and fixes
    - `utils/` for environment checks
 
 2. **Follow naming conventions**:
    - Unit/Integration tests: `test_*.py`
    - Diagnostic scripts: `check_*.py`
    - Fix verification: `test_*_fix.py`
+   - Dataset tools: `diagnose_*.py`, `fix_*.py`, `*_validator.py`
    - Utility scripts: `test_*.py` or `verify_*.py`
 
 3. **Include proper documentation**:
