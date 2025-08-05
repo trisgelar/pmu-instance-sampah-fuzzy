@@ -183,7 +183,8 @@ class ModelProcessor:
                     epochs=epochs,
                     imgsz=self.img_size[0],
                     batch=batch_size,
-                    name=train_name
+                    name=train_name,
+                    project=self.MODEL_DIR  # Explicitly set project directory
                 )
                 logger.info(f"YOLO{model_version} (segment) training completed successfully")
             except Exception as e:
