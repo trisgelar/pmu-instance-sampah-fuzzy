@@ -5,7 +5,7 @@ import shutil
 try:
     from rknn.api import RKNN
 except ImportError:
-    print("RKNN Toolkit2 tidak ditemukan. Konversi RKNN mungkin tidak dapat dilakukan di lingkungan ini.")
+    # print("RKNN Toolkit2 tidak ditemukan. Konversi RKNN mungkin tidak dapat dilakukan di lingkungan ini.")
     RKNN = None
 
 class RknnConverter:

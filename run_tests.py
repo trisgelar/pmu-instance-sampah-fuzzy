@@ -136,7 +136,7 @@ def run_configuration_tests():
     print("⚙️  Running Configuration Tests...")
     
     # Import configuration test modules
-    from tests.test_config_manager import (
+    from tests.unit.test_config_manager import (
         TestConfigManager, TestModelConfig, TestDatasetConfig, 
         TestFuzzyConfig, TestLoggingConfig, TestSystemConfig, TestEnvironment
     )
@@ -172,7 +172,7 @@ def run_fuzzy_logic_tests():
     print("🧠 Running Fuzzy Logic Tests...")
     
     # Import fuzzy logic test modules
-    from tests.test_fuzzy_area_classifier import TestFuzzyAreaClassifier, TestFuzzyAreaClassifierIntegration
+    from tests.unit.test_fuzzy_area_classifier import TestFuzzyAreaClassifier, TestFuzzyAreaClassifierIntegration
     
     # Create test suite
     loader = unittest.TestLoader()
