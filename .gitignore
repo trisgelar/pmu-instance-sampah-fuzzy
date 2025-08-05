@@ -262,6 +262,9 @@ data/
 *.rar
 *.7z
 
+# Results files
+results/
+
 # Training outputs
 runs/
 wandb/
