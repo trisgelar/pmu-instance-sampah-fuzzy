@@ -140,9 +140,55 @@ class DatasetManager:
             logger.error("Please ensure your Roboflow API key is correct and project/version is available.")
             raise APIError(error_msg) from e
 
+    def _extract_local_dataset(self, dataset_zip_path: str) -> Optional[str]:
+        """
+        Extract dataset from local dataset.zip file.
+        
+        Args:
+            dataset_zip_path: Path to the dataset.zip file
+            
+        Returns:
+            Optional[str]: Path to extracted dataset directory or None if failed
+            
+        Raises:
+            FileOperationError: If extraction fails
+        """
+        try:
+            import zipfile
+            import tempfile
+            
+            logger.info(f"Extracting {dataset_zip_path}...")
+            
+            # Create temporary directory for extraction
+            temp_dir = tempfile.mkdtemp(prefix="dataset_extract_")
+            
+            # Extract the zip file
+            with zipfile.ZipFile(dataset_zip_path, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+            
+            logger.info(f"Dataset extracted to: {temp_dir}")
+            
+            # Find the dataset directory (usually contains train, valid, test folders)
+            extracted_contents = os.listdir(temp_dir)
+            if len(extracted_contents) == 1 and os.path.isdir(os.path.join(temp_dir, extracted_contents[0])):
+                # Single directory containing the dataset
+                dataset_dir = os.path.join(temp_dir, extracted_contents[0])
+            else:
+                # Multiple files/folders, use temp_dir as dataset directory
+                dataset_dir = temp_dir
+            
+            logger.info(f"Using dataset directory: {dataset_dir}")
+            return dataset_dir
+            
+        except Exception as e:
+            error_msg = f"Failed to extract local dataset: {str(e)}"
+            logger.error(error_msg)
+            raise FileOperationError(error_msg) from e
+
     def prepare_datasets(self) -> bool:
         """
         Mempersiapkan dataset untuk Instance Segmentation.
+        Checks for existing dataset.zip first, then downloads from Roboflow if needed.
         
         Returns:
             bool: True if successful, False otherwise
@@ -153,14 +199,21 @@ class DatasetManager:
         logger.info("Preparing Instance Segmentation Dataset")
         
         try:
-            is_dataset_root_path = self._download_from_roboflow(
-                self.ROBOFLOW_IS_PROJECT, 
-                self.ROBOFLOW_IS_VERSION, 
-                dataset_type="coco-segmentation"
-            )
+            # Check for existing dataset.zip in root folder
+            dataset_zip_path = "dataset.zip"
+            if os.path.exists(dataset_zip_path):
+                logger.info(f"Found existing {dataset_zip_path} in root folder. Using local dataset.")
+                is_dataset_root_path = self._extract_local_dataset(dataset_zip_path)
+            else:
+                logger.info(f"No {dataset_zip_path} found. Downloading from Roboflow...")
+                is_dataset_root_path = self._download_from_roboflow(
+                    self.ROBOFLOW_IS_PROJECT, 
+                    self.ROBOFLOW_IS_VERSION, 
+                    dataset_type="coco-segmentation"
+                )
             
             if not is_dataset_root_path:
-                raise DatasetError("Failed to download dataset from Roboflow")
+                raise DatasetError("Failed to prepare dataset")
             
             is_dataset_target_path = os.path.join(self.DATASET_DIR, self.ROBOFLOW_IS_PROJECT)
             os.makedirs(is_dataset_target_path, exist_ok=True)
@@ -221,7 +274,7 @@ class DatasetManager:
 
     def _get_class_names(self) -> list[str]:
         """
-        Get class names from Roboflow project.
+        Get class names from Roboflow project or use default for local dataset.
         
         Returns:
             list: List of class names
@@ -234,8 +287,9 @@ class DatasetManager:
             logger.info(f"Retrieved {len(class_names)} class names from Roboflow")
             return class_names
         except Exception as e:
-            logger.warning(f"Failed to get class names from Roboflow: {str(e)}. Using placeholder.")
-            return ["class0", "class1"]
+            logger.warning(f"Failed to get class names from Roboflow: {str(e)}. Using default class names for waste detection.")
+            # Default class names for waste detection
+            return ["waste", "litter", "trash"]
 
     def _create_data_yaml(self, dataset_path: str, path_train: str, path_val: str, 
                           path_test: str, class_names: list[str]) -> None:

@@ -58,9 +58,9 @@ class DatasetConfig:
     
     # Directory structure
     default_dataset_dir: str = "datasets"
-    default_model_dir: str = "runs"
-    default_onnx_dir: str = "onnx_models"
-    default_rknn_dir: str = "rknn_models"
+    default_model_dir: str = "results/runs"
+    default_onnx_dir: str = "results/onnx_models"
+    default_rknn_dir: str = "results/rknn_models"
     
     # File patterns
     supported_image_extensions: list[str] = field(default_factory=lambda: [".jpg", ".jpeg", ".png", ".bmp"])

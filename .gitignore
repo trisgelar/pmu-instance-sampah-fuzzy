@@ -267,6 +267,7 @@ results/
 
 # Training outputs
 runs/
+results/runs/
 wandb/
 mlruns/
 tensorboard_logs/
