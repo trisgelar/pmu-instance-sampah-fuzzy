@@ -21,7 +21,7 @@ This system combines state-of-the-art computer vision techniques with fuzzy logi
 
 ```
 pmu-instance-sampah-fuzzy/
-├── main_colab.py              # Main orchestrator
+├── main_colab.py              # Main orchestrator (reorganized with functions)
 ├── config.yaml               # Configuration file
 ├── secrets.yaml              # Secrets (not in repo)
 ├── requirements.txt           # Dependencies
@@ -41,11 +41,18 @@ pmu-instance-sampah-fuzzy/
 │       ├── setup_cuda_environment.py  # Environment configuration
 │       ├── setup_cuda_env.bat # Windows batch setup
 │       └── requirements-*.txt # CUDA dependencies
-├── tests/                    # Test suite
+├── tests/                    # Comprehensive test suite
 │   ├── unit/                 # Unit tests
 │   ├── integration/          # Integration tests
 │   ├── diagnostic/           # Diagnostic scripts
 │   ├── fixes/                # Fix verification
+│   ├── dataset_tools/        # Dataset validation and fixing
+│   ├── training/             # Training system tests
+│   ├── existing_results/     # Existing results usage tests
+│   ├── onnx_testing/         # Structured ONNX testing (check0-3)
+│   ├── type_checking/        # Type validation and checking
+│   ├── bug_fixing/           # Bug detection and fixing
+│   ├── validation/           # General validation tools
 │   └── utils/                # Utility tests
 ├── run_tests.py              # Test runner
 ├── validate_secrets.py       # Secrets validation
@@ -55,6 +62,72 @@ pmu-instance-sampah-fuzzy/
     ├── TROUBLESHOOTING.md
     └── CONTRIBUTING.md
 ```
+
+## 🧪 Testing System
+
+### **Comprehensive Test Suite**
+
+The project includes a comprehensive testing system organized into logical categories:
+
+#### **🔧 ONNX Testing (`tests/onnx_testing/`)**
+- **check0** - Environment setup validation
+- **check1** - Model file validation  
+- **check2** - Conversion process testing
+- **check3** - Inference testing
+
+#### **🔍 Type Checking (`tests/type_checking/`)**
+- Type validation and compatibility checking
+- Data structure validation
+- Configuration type verification
+
+#### **🐛 Bug Fixing (`tests/bug_fixing/`)**
+- Common bug detection (imports, syntax, paths, types, logic)
+- Automatic bug fixing capabilities
+- Fix validation and verification
+
+#### **✅ Validation (`tests/validation/`)**
+- Model validation
+- Data format validation
+- Configuration validation
+
+#### **📊 Other Test Categories**
+- **Unit Tests** (`unit/`) - Individual module testing
+- **Integration Tests** (`integration/`) - System-wide testing
+- **Diagnostic Tests** (`diagnostic/`) - Troubleshooting scripts
+- **Dataset Tools** (`dataset_tools/`) - Dataset validation and fixing
+- **Training Tests** (`training/`) - Training system validation
+- **Existing Results** (`existing_results/`) - Using existing training results
+
+### **Running Tests**
+
+```bash
+# Run all tests
+python run_tests.py
+
+# Run specific test categories
+python run_tests.py --category onnx_testing
+python run_tests.py --category type_checking
+python run_tests.py --category bug_fixing
+python run_tests.py --category validation
+
+# Run individual ONNX checks
+python tests/onnx_testing/check_onnx_environment.py
+python tests/onnx_testing/check_onnx_models.py
+python tests/onnx_testing/check_onnx_conversion.py
+python tests/onnx_testing/check_onnx_inference.py
+
+# Run specific test
+python run_tests.py --test config_manager
+
+# Verbose output
+python run_tests.py --category unit --verbose
+```
+
+### **Test Documentation**
+- **[Tests README](tests/README.md)** - Comprehensive test documentation
+- **[Testing Guide](docs/TESTING_GUIDE.md)** - Complete testing guide and reference
+- **[Code Structure Memory](docs/CODE_STRUCTURE_MEMORY.md)** - Testing organization memory
+- **[Code Restructure Summary](docs/CODE_RESTRUCTURE_SUMMARY.md)** - Implementation details
 
 ## 🚀 Quick Start
 
@@ -275,12 +348,109 @@ inference_results = system.run_inference_and_visualization(result, "v8n")
 metrics = system.analyze_training_run(result, "v8n")
 ```
 
+### 6. Command-Line Usage
+
+The system now supports flexible command-line execution with various options:
+
+#### Basic Usage
+```bash
+# Run with default settings (YOLOv8n)
+python main_colab.py
+
+# Run specific model
+python main_colab.py --models v8n
+
+# Run multiple models
+python main_colab.py --models v8n v10n v11n
+```
+
+#### Training Options
+```bash
+# Force retraining (ignore existing models)
+python main_colab.py --force-retrain
+
+# Custom training parameters
+python main_colab.py --epochs 100 --batch-size 32
+
+# Combine options
+python main_colab.py --models v8n v10n --force-retrain --epochs 200 --batch-size 16
+```
+
+#### Dataset Management
+```bash
+# Prepare datasets before training
+python main_colab.py --prepare-datasets
+
+# Fix existing datasets if preparation fails
+python main_colab.py --fix-datasets
+
+# Both dataset operations
+python main_colab.py --prepare-datasets --fix-datasets
+```
+
+#### Google Drive Integration
+```bash
+# Save results to Google Drive
+python main_colab.py --save-to-drive
+
+# Complete pipeline with drive save
+python main_colab.py --models v8n --force-retrain --save-to-drive
+```
+
+#### Setup and Help
+```bash
+# Show Google Colab setup instructions
+python main_colab.py --show-setup
+
+# Show help
+python main_colab.py --help
+```
+
+#### Complete Examples
+
+**Quick Start (Use existing models):**
+```bash
+python main_colab.py --models v8n
+```
+
+**Full Training Pipeline:**
+```bash
+python main_colab.py --models v8n v10n v11n --force-retrain --epochs 200 --batch-size 16 --prepare-datasets --save-to-drive
+```
+
+**Development/Testing:**
+```bash
+python main_colab.py --models v8n --epochs 50 --batch-size 8
+```
+
+**Production Deployment:**
+```bash
+python main_colab.py --models v8n v10n --force-retrain --epochs 300 --batch-size 32 --save-to-drive
+```
+
+#### Command-Line Arguments Reference
+
+| Argument | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `--models` | Model versions to run | `["v8n"]` | `--models v8n v10n v11n` |
+| `--force-retrain` | Force retraining | `False` | `--force-retrain` |
+| `--epochs` | Training epochs | `200` | `--epochs 100` |
+| `--batch-size` | Batch size | `16` | `--batch-size 32` |
+| `--prepare-datasets` | Prepare datasets | `False` | `--prepare-datasets` |
+| `--fix-datasets` | Fix existing datasets | `False` | `--fix-datasets` |
+| `--save-to-drive` | Save to Google Drive | `False` | `--save-to-drive` |
+| `--show-setup` | Show Colab setup | `False` | `--show-setup` |
+| `--help` | Show help | - | `--help` |
+
 ## 📚 Documentation
 
 ### Core Documentation
 - **[API Reference](docs/API_REFERENCE.md)**: Complete API documentation
 - **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)**: Production deployment instructions
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)**: Common issues and solutions
+- **[ONNX/RKNN Troubleshooting](docs/ONNX_RKNN_TROUBLESHOOTING.md)**: ONNX and RKNN model issues and solutions
+- **[Pipeline Differences](docs/PIPELINE_DIFFERENCES_GUIDE.md)**: Understanding pipeline types and folder issues
+- **[Pipeline Quick Reference](docs/PIPELINE_QUICK_REFERENCE.md)**: Quick comparison table and commands
 - **[Contributing](docs/CONTRIBUTING.md)**: Development guidelines
 
 ### System Improvements
@@ -325,6 +495,58 @@ roboflow_api_key: "YOUR_ROBOFLOW_API_KEY_HERE"
 # Optional: Additional services
 # google_cloud_api_key: "YOUR_GOOGLE_CLOUD_API_KEY"
 # aws_access_key_id: "YOUR_AWS_ACCESS_KEY_ID"
+```
+
+## 🏗️ System Architecture (Updated)
+
+### Main Orchestrator (`main_colab.py`)
+
+The main system has been reorganized into focused, reusable functions:
+
+#### **System Functions**
+- `initialize_system()`: Clean system initialization with status display
+- `setup_colab_environment()`: Colab setup instructions
+- `display_completion_message()`: User-friendly completion messages
+
+#### **Dataset Functions**
+- `prepare_datasets()`: Dataset preparation with Ultralytics normalization
+- `fix_existing_dataset()`: Dataset fixing functionality
+
+#### **Pipeline Functions**
+- `run_single_model_pipeline()`: Single model execution with error handling
+- `run_all_model_pipelines()`: Multi-model execution with results tracking
+- `print_pipeline_summary()`: Execution summary display
+
+#### **Utility Functions**
+- `parse_arguments()`: Command-line argument parsing
+- `save_results_to_drive()`: Google Drive integration
+
+#### **Benefits of New Organization**
+- **🎯 Readability**: Functions are focused and well-documented
+- **🔧 Flexibility**: Command-line arguments for different use cases
+- **🔄 Maintainability**: Easy to modify individual components
+- **📋 Documentation**: Clear docstrings and help messages
+- **📊 Progress Tracking**: Better execution monitoring and summaries
+
+#### **Function Usage Examples**
+
+```python
+# Initialize system
+from main_colab import initialize_system, run_all_model_pipelines
+system = initialize_system()
+
+# Run multiple models with custom parameters
+results = run_all_model_pipelines(
+    system, 
+    models=["v8n", "v10n"], 
+    force_retrain=False,
+    epochs=200,
+    batch_size=16
+)
+
+# Check results
+for model, success in results.items():
+    print(f"YOLO{model}: {'✅' if success else '❌'}")
 ```
 
 ## 🧪 Testing
@@ -445,6 +667,73 @@ result = system.train_and_export_model("v8n", epochs=50, batch_size=16)
 4. **Error handling**
 
 See [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) for detailed instructions.
+
+## ⚡ Quick Reference
+
+### Command-Line Quick Start
+
+```bash
+# Basic usage
+python main_colab.py
+
+# Run specific model
+python main_colab.py --models v8n
+
+# Force retraining
+python main_colab.py --force-retrain
+
+# Custom parameters
+python main_colab.py --epochs 100 --batch-size 32
+
+# Complete pipeline
+python main_colab.py --models v8n v10n --force-retrain --epochs 200 --save-to-drive
+
+# Show help
+python main_colab.py --help
+```
+
+### Function Quick Reference
+
+```python
+# Initialize system
+from main_colab import initialize_system, run_all_model_pipelines
+system = initialize_system()
+
+# Run pipelines
+results = run_all_model_pipelines(system, models=["v8n", "v10n"])
+
+# Check results
+for model, success in results.items():
+    print(f"YOLO{model}: {'✅' if success else '❌'}")
+```
+
+### Test Quick Reference
+
+```bash
+# Run all tests
+python run_tests.py
+
+# Run specific category
+python run_tests.py --category security
+
+# Run specific test
+python run_tests.py --test config_manager
+```
+
+### Environment Diagnostic
+
+```bash
+# Check ONNX and RKNN environment
+python tests/onnx_testing/check_onnx_rknn_environment.py
+
+# This will check:
+# - Python version compatibility
+# - PyTorch and CUDA installation
+# - ONNX and RKNN dependencies
+# - GPU vs CPU environment
+# - Available memory
+# - Existing model files
+```
 
 ## 🤝 Contributing
 

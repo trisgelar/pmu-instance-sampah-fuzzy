@@ -647,111 +647,568 @@ class WasteDetectionSystemColab:
             logger.error(f"❌ Safe YOLO{model_version} pipeline failed: {str(e)}")
             return False
 
+    def export_onnx_from_existing_model(self, model_version: str) -> bool:
+        """
+        Export ONNX model from existing training results.
+        
+        Args:
+            model_version: Model version to export (e.g., "v8n", "v10n", "v11n")
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            logger.info(f"Exporting ONNX model for YOLO{model_version} from existing training results")
+            
+            # Find existing training run
+            existing_run = self.find_existing_training_run(model_version)
+            if not existing_run:
+                logger.error(f"No existing training run found for YOLO{model_version}")
+                return False
+            
+            # Path to the trained model
+            pytorch_model_path = os.path.join(existing_run, "weights", "best.pt")
+            
+            if not os.path.exists(pytorch_model_path):
+                logger.error(f"Trained model not found at {pytorch_model_path}")
+                return False
+            
+            # ONNX output path
+            onnx_output_path = ""
+            if model_version == "v8n":
+                onnx_output_path = self.model_processor.YOLOV8N_IS_ONNX_PATH
+            elif model_version == "v10n":
+                onnx_output_path = self.model_processor.YOLOV10N_IS_ONNX_PATH
+            elif model_version == "v11n":
+                onnx_output_path = self.model_processor.YOLOV11N_IS_ONNX_PATH
+            else:
+                logger.error(f"Unknown model version '{model_version}' for ONNX export")
+                return False
+            
+            logger.info(f"Exporting PyTorch model ({pytorch_model_path}) to ONNX at {onnx_output_path}")
+            
+            # Load the trained model and export to ONNX
+            from ultralytics import YOLO
+            
+            try:
+                # Load the trained model
+                model = YOLO(pytorch_model_path)
+                
+                # Export to ONNX
+                model.export(
+                    format="onnx", 
+                    imgsz=self.model_config.default_img_size, 
+                    opset=12, 
+                    simplify=True
+                )
+                
+                # Move the exported file to the correct location
+                exported_files = [f for f in os.listdir(os.path.dirname(pytorch_model_path)) if f.endswith('.onnx')]
+                if exported_files:
+                    source_path = os.path.join(os.path.dirname(pytorch_model_path), exported_files[0])
+                    shutil.move(source_path, onnx_output_path)
+                
+                if os.path.exists(onnx_output_path):
+                    logger.info(f"✅ ONNX model successfully exported to: {onnx_output_path}")
+                    return True
+                else:
+                    logger.error(f"❌ Failed to export ONNX model to {onnx_output_path}")
+                    return False
+                    
+            except Exception as e:
+                logger.error(f"Failed to export model to ONNX: {str(e)}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Unexpected error during ONNX export: {str(e)}")
+            return False
 
-# --- Fungsi Utama (Main Execution Flow untuk Colab) ---
+    def execute_yolo_pipeline_complete(self, model_version: str, force_retrain: bool = False, 
+                                      epochs: Optional[int] = None, batch_size: Optional[int] = None,
+                                      num_inference_images: int = 6) -> bool:
+        """
+        Execute complete YOLO pipeline with ONNX export from existing models.
+        
+        Args:
+            model_version: Model version to train/use (e.g., "v8n", "v10n", "v11n")
+            force_retrain: If True, always train new model
+            epochs: Number of training epochs (if training)
+            batch_size: Training batch size (if training)
+            num_inference_images: Number of images for inference
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            logger.info(f"🚀 Starting complete YOLO{model_version} pipeline")
+            
+            # Get or train model
+            run_dir = self.get_or_train_model(model_version, force_retrain, epochs, batch_size)
+            
+            if not run_dir:
+                logger.error(f"❌ Failed to get or train model for YOLO{model_version}")
+                return False
+            
+            logger.info(f"✅ Using training run: {run_dir}")
+            
+            # Export ONNX from existing model if not training new
+            if not force_retrain:
+                logger.info(f"📦 Exporting ONNX model for YOLO{model_version}")
+                onnx_success = self.export_onnx_from_existing_model(model_version)
+                if not onnx_success:
+                    logger.warning(f"⚠️ ONNX export failed for YOLO{model_version}, continuing with pipeline")
+            
+            # Execute pipeline steps
+            logger.info(f"📊 Analyzing training run for YOLO{model_version}")
+            self.analyze_training_run(run_dir, model_version)
+            
+            logger.info(f"🔍 Running inference and visualization for YOLO{model_version}")
+            self.run_inference_and_visualization(run_dir, model_version, num_inference_images)
+            
+            logger.info(f"📦 Converting and zipping RKNN models for YOLO{model_version}")
+            self.convert_and_zip_rknn_models(model_version)
+            
+            logger.info(f"🎉 Complete YOLO{model_version} pipeline completed successfully!")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Complete YOLO{model_version} pipeline failed: {str(e)}")
+            return False
+
+    def execute_yolo_pipeline_with_onnx(self, model_version: str, force_retrain: bool = False, 
+                                       epochs: Optional[int] = None, batch_size: Optional[int] = None) -> bool:
+        """
+        Execute YOLO pipeline with ONNX export but skip problematic inference.
+        
+        Args:
+            model_version: Model version to train/use (e.g., "v8n", "v10n", "v11n")
+            force_retrain: If True, always train new model
+            epochs: Number of training epochs (if training)
+            batch_size: Training batch size (if training)
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            logger.info(f"🚀 Starting YOLO{model_version} pipeline with ONNX export")
+            
+            # Get or train model
+            run_dir = self.get_or_train_model(model_version, force_retrain, epochs, batch_size)
+            
+            if not run_dir:
+                logger.error(f"❌ Failed to get or train model for YOLO{model_version}")
+                return False
+            
+            logger.info(f"✅ Using training run: {run_dir}")
+            
+            # Export ONNX from existing model if not training new
+            if not force_retrain:
+                logger.info(f"📦 Exporting ONNX model for YOLO{model_version}")
+                onnx_success = self.export_onnx_from_existing_model(model_version)
+                if not onnx_success:
+                    logger.warning(f"⚠️ ONNX export failed for YOLO{model_version}, continuing with pipeline")
+            
+            # Execute pipeline steps
+            logger.info(f"📊 Analyzing training run for YOLO{model_version}")
+            self.analyze_training_run(run_dir, model_version)
+            
+            # Skip inference visualization (has RGBA issue)
+            logger.info(f"⏭️ Skipping run_inference_and_visualization (RGBA issue)")
+            
+            logger.info(f"📦 Converting and zipping RKNN models for YOLO{model_version}")
+            self.convert_and_zip_rknn_models(model_version)
+            
+            logger.info(f"🎉 YOLO{model_version} pipeline with ONNX export completed successfully!")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ YOLO{model_version} pipeline with ONNX export failed: {str(e)}")
+            return False
+
+
+def initialize_system() -> WasteDetectionSystemColab:
+    """
+    Initialize the Waste Detection System with proper logging and status display.
+    
+    Returns:
+        WasteDetectionSystemColab: Initialized system instance
+    """
+    logger.info("Starting Waste Detection System with Configuration Management")
+    
+    # Initialize system with configuration
+    system_colab = WasteDetectionSystemColab()
+    
+    # Display system status and configuration
+    status = system_colab.get_system_status()
+    config_summary = system_colab.get_configuration_summary()
+    
+    logger.info(f"System Status: {status}")
+    logger.info(f"Configuration Summary: {config_summary}")
+    
+    return system_colab
+
+
+def prepare_datasets(system_colab: WasteDetectionSystemColab) -> bool:
+    """
+    Prepare datasets with Ultralytics normalization.
+    
+    Args:
+        system_colab: Initialized system instance
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        logger.info("🔧 Preparing datasets with Ultralytics normalization...")
+        
+        # Prepare datasets with integrated Ultralytics normalization
+        success = system_colab.dataset_manager.prepare_datasets()
+        if success:
+            logger.info("✅ Dataset preparation completed with Ultralytics normalization")
+            
+            # Validate the prepared dataset
+            validation_results = system_colab.dataset_manager.validate_dataset_format()
+            if not validation_results['issues']:
+                logger.info("✅ Dataset validation passed - ready for training!")
+                
+                # Zip datasets for backup
+                system_colab.dataset_manager.zip_datasets_folder()
+                return True
+            else:
+                logger.warning("⚠️ Dataset validation issues found:")
+                for issue in validation_results['issues']:
+                    logger.warning(f"  - {issue}")
+                return False
+        else:
+            logger.error("❌ Dataset preparation failed")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Dataset preparation failed: {str(e)}")
+        return False
+
+
+def fix_existing_dataset(system_colab: WasteDetectionSystemColab) -> bool:
+    """
+    Fix existing dataset if preparation failed.
+    
+    Args:
+        system_colab: Initialized system instance
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        logger.info("🔧 Attempting to fix existing dataset...")
+        
+        # First, fix path issues in data.yaml
+        path_fix_success = system_colab.dataset_manager.fix_data_yaml_paths()
+        if path_fix_success:
+            logger.info("✅ Data.yaml path fixing completed successfully")
+        else:
+            logger.warning("⚠️ Data.yaml path fixing failed or not needed")
+        
+        # Then fix dataset classes and segmentation labels
+        fix_success = system_colab.dataset_manager.fix_dataset_classes()
+        if fix_success:
+            logger.info("✅ Dataset fixing completed successfully")
+            
+            # Additional: Fix segmentation labels specifically
+            seg_fix_success = system_colab.dataset_manager.fix_segmentation_labels()
+            if seg_fix_success:
+                logger.info("✅ Segmentation labels fixed successfully")
+            else:
+                logger.warning("⚠️ Segmentation label fixing failed or not needed")
+            
+            return True
+        else:
+            logger.error("❌ Dataset fixing failed")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Dataset fixing failed: {str(e)}")
+        return False
+
+
+def execute_yolo_pipelines(system_colab: WasteDetectionSystemColab) -> None:
+    """
+    Execute YOLO pipelines for all model versions.
+    
+    Args:
+        system_colab: Initialized system instance
+    """
+    # YOLOv8n Pipeline
+    try:
+        logger.info("🚀 Executing YOLOv8n pipeline...")
+        system_colab.execute_yolo_pipeline_safe("v8n", force_retrain=False, epochs=200, batch_size=16)
+    except Exception as e:
+        logger.error(f"YOLOv8n pipeline failed: {str(e)}")
+    
+    # YOLOv10n Pipeline (commented out)
+    # try:
+    #     logger.info("🚀 Executing YOLOv10n pipeline...")
+    #     system_colab.execute_yolo_pipeline_safe("v10n", force_retrain=False, epochs=200, batch_size=16)
+    # except Exception as e:
+    #     logger.error(f"YOLOv10n pipeline failed: {str(e)}")
+    
+    # YOLOv11n Pipeline (commented out)
+    # try:
+    #     logger.info("🚀 Executing YOLOv11n pipeline...")
+    #     system_colab.execute_yolo_pipeline_safe("v11n", force_retrain=False, epochs=200, batch_size=16)
+    # except Exception as e:
+    #     logger.error(f"YOLOv11n pipeline failed: {str(e)}")
+
+
+def save_results_to_drive(system_colab: WasteDetectionSystemColab) -> None:
+    """
+    Save all results to Google Drive.
+    
+    Args:
+        system_colab: Initialized system instance
+    """
+    try:
+        logger.info("💾 Saving results to Google Drive...")
+        system_colab.drive_manager.save_all_results_to_drive(folder_to_save="yolo_issat_results")
+        logger.info("✅ Results saved to Google Drive successfully")
+    except Exception as e:
+        logger.error(f"Drive save failed: {str(e)}")
+
+
+def display_completion_message() -> None:
+    """Display completion message to user."""
+    logger.info("Waste Detection System completed successfully")
+    print("\n🎉 Proses di Google Colab selesai!")
+    print("📁 Model .pt, .onnx, .rknn, dan file .zip yang dihasilkan telah disimpan")
+    print("📥 File dapat diunduh secara manual dari output directories")
+
+
+def setup_colab_environment() -> None:
+    """
+    Setup instructions for Google Colab environment.
+    This function provides guidance for Colab-specific setup.
+    """
+    print("\n📋 Google Colab Setup Instructions:")
+    print("=" * 50)
+    print("1. Mount Google Drive:")
+    print("   from google.colab import drive")
+    print("   drive.mount('/content/gdrive')")
+    print("\n2. Enable TensorBoard:")
+    print("   %load_ext tensorboard")
+    print("   %tensorboard --logdir runs")
+    print("\n3. Install dependencies if needed:")
+    print("   !pip install -r requirements.txt")
+    print("=" * 50)
+
+
+def run_single_model_pipeline(system_colab: WasteDetectionSystemColab, 
+                             model_version: str, force_retrain: bool = False,
+                             epochs: int = 200, batch_size: int = 16) -> bool:
+    """
+    Run pipeline for a single model version.
+    
+    Args:
+        system_colab: Initialized system instance
+        model_version: Model version to run (e.g., "v8n", "v10n", "v11n")
+        force_retrain: If True, always train new model
+        epochs: Number of training epochs
+        batch_size: Training batch size
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        logger.info(f"🚀 Executing YOLO{model_version} pipeline...")
+        success = system_colab.execute_yolo_pipeline_safe(
+            model_version, 
+            force_retrain=force_retrain, 
+            epochs=epochs, 
+            batch_size=batch_size
+        )
+        
+        if success:
+            logger.info(f"✅ YOLO{model_version} pipeline completed successfully")
+        else:
+            logger.error(f"❌ YOLO{model_version} pipeline failed")
+            
+        return success
+        
+    except Exception as e:
+        logger.error(f"YOLO{model_version} pipeline failed: {str(e)}")
+        return False
+
+
+def run_all_model_pipelines(system_colab: WasteDetectionSystemColab, 
+                           models: list = None, force_retrain: bool = False,
+                           epochs: int = 200, batch_size: int = 16) -> dict:
+    """
+    Run pipelines for multiple model versions.
+    
+    Args:
+        system_colab: Initialized system instance
+        models: List of model versions to run (default: ["v8n"])
+        force_retrain: If True, always train new models
+        epochs: Number of training epochs
+        batch_size: Training batch size
+        
+    Returns:
+        dict: Results for each model version
+    """
+    if models is None:
+        models = ["v8n"]
+    
+    results = {}
+    
+    for model_version in models:
+        logger.info(f"🔄 Processing YOLO{model_version}...")
+        success = run_single_model_pipeline(
+            system_colab, 
+            model_version, 
+            force_retrain, 
+            epochs, 
+            batch_size
+        )
+        results[model_version] = success
+    
+    return results
+
+
+def print_pipeline_summary(results: dict) -> None:
+    """
+    Print a summary of pipeline execution results.
+    
+    Args:
+        results: Dictionary of results from run_all_model_pipelines
+    """
+    print("\n📊 Pipeline Execution Summary:")
+    print("=" * 40)
+    
+    for model_version, success in results.items():
+        status = "✅ SUCCESS" if success else "❌ FAILED"
+        print(f"YOLO{model_version}: {status}")
+    
+    successful = sum(results.values())
+    total = len(results)
+    print(f"\nOverall: {successful}/{total} pipelines completed successfully")
+    print("=" * 40)
+
+
+def parse_arguments():
+    """
+    Parse command-line arguments for flexible execution.
+    
+    Returns:
+        argparse.Namespace: Parsed arguments
+    """
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Waste Detection System - YOLO Pipeline")
+    
+    # Model selection
+    parser.add_argument("--models", nargs="+", choices=["v8n", "v10n", "v11n"], 
+                       default=["v8n"], help="Model versions to run")
+    
+    # Training options
+    parser.add_argument("--force-retrain", action="store_true", 
+                       help="Force retraining even if existing models found")
+    parser.add_argument("--epochs", type=int, default=200, 
+                       help="Number of training epochs")
+    parser.add_argument("--batch-size", type=int, default=16, 
+                       help="Training batch size")
+    
+    # Dataset options
+    parser.add_argument("--prepare-datasets", action="store_true", 
+                       help="Prepare datasets before training")
+    parser.add_argument("--fix-datasets", action="store_true", 
+                       help="Fix existing datasets if preparation fails")
+    
+    # Drive options
+    parser.add_argument("--save-to-drive", action="store_true", 
+                       help="Save results to Google Drive")
+    
+    # Setup options
+    parser.add_argument("--show-setup", action="store_true", 
+                       help="Show Google Colab setup instructions")
+    
+    # Pipeline options
+    parser.add_argument("--complete-pipeline", action="store_true", 
+                       help="Use complete pipeline (includes inference and ONNX export)")
+    parser.add_argument("--onnx-export", action="store_true", 
+                       help="Use pipeline with ONNX export (skips inference)")
+    
+    return parser.parse_args()
+
+
 def main():
     """
     Main execution function with comprehensive error handling and configuration management.
     """
     try:
-        logger.info("Starting Waste Detection System with Configuration Management")
+        # Parse command-line arguments
+        args = parse_arguments()
         
-        # Initialize system with configuration
-        system_colab = WasteDetectionSystemColab()
+        # Show setup instructions if requested
+        if args.show_setup:
+            setup_colab_environment()
+            return
         
-        # Display system status and configuration
-        status = system_colab.get_system_status()
-        config_summary = system_colab.get_configuration_summary()
+        # Initialize system
+        system_colab = initialize_system()
         
-        logger.info(f"System Status: {status}")
-        logger.info(f"Configuration Summary: {config_summary}")
-
-        # --- PENTING: Langkah Tambahan - Mount Google Drive ---
-        # Jalankan ini di sel terpisah di Colab untuk menghubungkan ke Drive
-        # from google.colab import drive
-        # drive.mount('/content/gdrive')
-
-        # --- Untuk melihat log pelatihan di TensorBoard ---
-        # %load_ext tensorboard
-        # %tensorboard --logdir runs
-
-        #Langkah 1: Persiapan Dataset dengan Normalisasi Ultralytics (jalankan sekali)
-        # try:
-        #     # Prepare datasets with integrated Ultralytics normalization
-        #     success = system_colab.dataset_manager.prepare_datasets()
-        #     if success:
-        #         logger.info("✅ Dataset preparation completed with Ultralytics normalization")
-                
-        #         # Validate the prepared dataset
-        #         validation_results = system_colab.dataset_manager.validate_dataset_format()
-        #         if not validation_results['issues']:
-        #             logger.info("✅ Dataset validation passed - ready for training!")
-        #         else:
-        #             logger.warning("⚠️ Dataset validation issues found:")
-        #             for issue in validation_results['issues']:
-        #                 logger.warning(f"  - {issue}")
-                
-        #         # Zip datasets for backup
-        #         system_colab.dataset_manager.zip_datasets_folder()
-        #     else:
-        #         logger.error("❌ Dataset preparation failed")
-                
-        # except Exception as e:
-        #     logger.error(f"Dataset preparation failed: {str(e)}")
-            
-        # # Alternative: Fix existing dataset if preparation failed
-        # try:
-        #     logger.info("🔧 Attempting to fix existing dataset...")
-            
-        #     # First, fix path issues in data.yaml
-        #     path_fix_success = system_colab.dataset_manager.fix_data_yaml_paths()
-        #     if path_fix_success:
-        #         logger.info("✅ Data.yaml path fixing completed successfully")
-        #     else:
-        #         logger.warning("⚠️ Data.yaml path fixing failed or not needed")
-            
-        #     # Then fix dataset classes and segmentation labels
-        #     fix_success = system_colab.dataset_manager.fix_dataset_classes()
-        #     if fix_success:
-        #         logger.info("✅ Dataset fixing completed successfully")
-        #         
-        #         # Additional: Fix segmentation labels specifically
-        #         seg_fix_success = system_colab.dataset_manager.fix_segmentation_labels()
-        #         if seg_fix_success:
-        #             logger.info("✅ Segmentation labels fixed successfully")
-        #         else:
-        #             logger.warning("⚠️ Segmentation label fixing failed or not needed")
-        #     else:
-        #         logger.error("❌ Dataset fixing failed")
-        # except Exception as e:
-        #     logger.error(f"Dataset fixing failed: {str(e)}")
-
-        #--- Eksekusi Pipeline untuk YOLOv8n Instance Segmentation ---
-        try:
-            system_colab.execute_yolo_pipeline_safe("v8n", force_retrain=False, epochs=200, batch_size=16)
-        except Exception as e:
-            logger.error(f"YOLOv8n pipeline failed: {str(e)}")
+        # Optional: Dataset preparation
+        if args.prepare_datasets:
+            logger.info("🔧 Preparing datasets...")
+            prepare_datasets(system_colab)
         
-        # --- Eksekusi Pipeline untuk YOLOv10n Instance Segmentation ---
-        # try:
-        #     system_colab.execute_yolo_pipeline_safe("v10n", force_retrain=False, epochs=200, batch_size=16)
-        # except Exception as e:
-        #     logger.error(f"YOLOv10n pipeline failed: {str(e)}")
-
-        # --- Eksekusi Pipeline untuk YOLOv11n Instance Segmentation ---
-        # try:
-        #     system_colab.execute_yolo_pipeline_safe("v11n", force_retrain=False, epochs=200, batch_size=16)
-        # except Exception as e:
-        #     logger.error(f"YOLOv11n pipeline failed: {str(e)}")
-
-        # Langkah Tambahan: Menyimpan semua hasil ke Google Drive
-        # try:
-        #     system_colab.drive_manager.save_all_results_to_drive(folder_to_save="yolo_issat_results")
-        # except Exception as e:
-        #     logger.error(f"Drive save failed: {str(e)}")
+        if args.fix_datasets:
+            logger.info("🔧 Fixing existing datasets...")
+            fix_existing_dataset(system_colab)
         
-        logger.info("Waste Detection System completed successfully")
-        print("\nProses di Google Colab selesai. Model .pt, .onnx, .rknn, dan file .zip yang dihasilkan telah disimpan dan juga dapat diunduh secara manual.")
+        # Execute YOLO pipelines with better organization
+        logger.info("🎯 Starting YOLO pipeline execution...")
+        
+        if args.complete_pipeline:
+            # Use complete pipeline with inference and ONNX export
+            logger.info("🔄 Using complete pipeline (includes inference and ONNX export)")
+            results = {}
+            for model_version in args.models:
+                success = system_colab.execute_yolo_pipeline_complete(
+                    model_version,
+                    force_retrain=args.force_retrain,
+                    epochs=args.epochs,
+                    batch_size=args.batch_size
+                )
+                results[model_version] = success
+        elif args.onnx_export:
+            # Use pipeline with ONNX export but skip inference
+            logger.info("🔄 Using pipeline with ONNX export (skips inference)")
+            results = {}
+            for model_version in args.models:
+                success = system_colab.execute_yolo_pipeline_with_onnx(
+                    model_version,
+                    force_retrain=args.force_retrain,
+                    epochs=args.epochs,
+                    batch_size=args.batch_size
+                )
+                results[model_version] = success
+        else:
+            # Use safe pipeline (skips inference)
+            results = run_all_model_pipelines(
+                system_colab, 
+                models=args.models,
+                force_retrain=args.force_retrain,
+                epochs=args.epochs,
+                batch_size=args.batch_size
+            )
+        
+        # Print summary
+        print_pipeline_summary(results)
+        
+        # Optional: Save to Google Drive
+        if args.save_to_drive:
+            save_results_to_drive(system_colab)
+        
+        # Display completion message
+        display_completion_message()
         
     except Exception as e:
         error_msg = f"Critical error in main execution: {str(e)}"

@@ -108,7 +108,7 @@ def run_security_tests():
     print("🔒 Running Security Tests...")
     
     # Import security test modules
-    from tests.test_secrets_validation import TestSecretsValidation, TestSecretsValidationIntegration
+    from tests.unit.test_secrets_validation import TestSecretsValidation, TestSecretsValidationIntegration
     
     # Create test suite
     loader = unittest.TestLoader()
@@ -200,7 +200,7 @@ def run_exception_tests():
     print("🚨 Running Exception Tests...")
     
     # Import exception test modules
-    from tests.test_exceptions import TestExceptionHierarchy, TestExceptionUsage
+    from tests.unit.test_exceptions import TestExceptionHierarchy, TestExceptionUsage
     
     # Create test suite
     loader = unittest.TestLoader()
@@ -228,7 +228,7 @@ def run_integration_tests():
     print("🔗 Running Integration Tests...")
     
     # Import integration test modules
-    from tests.test_main_colab import TestWasteDetectionSystemColabIntegration
+    from tests.integration.test_main_colab import TestWasteDetectionSystemColabIntegration
     
     # Create test suite
     loader = unittest.TestLoader()
@@ -298,7 +298,7 @@ def main():
     """Main test runner function."""
     parser = argparse.ArgumentParser(description="Run waste detection system tests")
     parser.add_argument("--test", help="Run specific test (e.g., config_manager, fuzzy_logic)")
-    parser.add_argument("--category", choices=["all", "unit", "integration", "diagnostic", "fixes", "utils", "security", "config", "fuzzy", "exceptions"], 
+    parser.add_argument("--category", choices=["all", "unit", "integration", "diagnostic", "utils", "training_tools", "dataset_validation", "existing_results", "onnx_testing", "type_checking", "bug_fixing", "validation", "security", "config", "fuzzy", "exceptions"], 
                        default="all", help="Run tests by category")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--quiet", "-q", action="store_true", help="Quiet output")
@@ -371,6 +371,48 @@ def main():
             result, duration = discover_and_run_tests(test_category="utils", verbosity=verbosity)
             if result:
                 results.append(("Utility Tests", result, duration))
+        
+        elif args.category == "training_tools":
+            print("🏋️ Running training tools...")
+            result, duration = discover_and_run_tests(test_category="training_tools", verbosity=verbosity)
+            if result:
+                results.append(("Training Tools", result, duration))
+        
+        elif args.category == "dataset_validation":
+            print("📊 Running dataset validation...")
+            result, duration = discover_and_run_tests(test_category="dataset_validation", verbosity=verbosity)
+            if result:
+                results.append(("Dataset Validation", result, duration))
+        
+        elif args.category == "existing_results":
+            print("📊 Running existing results tests...")
+            result, duration = discover_and_run_tests(test_category="existing_results", verbosity=verbosity)
+            if result:
+                results.append(("Existing Results Tests", result, duration))
+        
+        elif args.category == "onnx_testing":
+            print("🔧 Running ONNX testing...")
+            result, duration = discover_and_run_tests(test_category="onnx_testing", verbosity=verbosity)
+            if result:
+                results.append(("ONNX Testing", result, duration))
+        
+        elif args.category == "type_checking":
+            print("🔍 Running type checking...")
+            result, duration = discover_and_run_tests(test_category="type_checking", verbosity=verbosity)
+            if result:
+                results.append(("Type Checking", result, duration))
+        
+        elif args.category == "bug_fixing":
+            print("🐛 Running bug fixing...")
+            result, duration = discover_and_run_tests(test_category="bug_fixing", verbosity=verbosity)
+            if result:
+                results.append(("Bug Fixing", result, duration))
+        
+        elif args.category == "validation":
+            print("✅ Running validation...")
+            result, duration = discover_and_run_tests(test_category="validation", verbosity=verbosity)
+            if result:
+                results.append(("Validation", result, duration))
         
         elif args.category == "security":
             result, duration = run_security_tests()

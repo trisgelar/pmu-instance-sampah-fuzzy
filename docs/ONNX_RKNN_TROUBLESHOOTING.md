@@ -1,0 +1,378 @@
+# ONNX and RKNN Troubleshooting Guide
+
+## 🚨 Common Problems and Solutions
+
+### Problem 1: ONNX Models Not Being Created
+
+#### **Symptoms:**
+- Empty `results/onnx_models/` directory
+- Log message: `"ONNX model not found at results/onnx_models/yolov8n_is.onnx. Skipping RKNN conversion."`
+- Training completes but no ONNX export
+
+#### **Root Causes:**
+
+##### **1. Training Done Before ONNX Export Feature**
+```bash
+# Problem: Training was completed before ONNX export was implemented
+# Old training runs don't automatically export ONNX models
+results/runs/segment_train_v8n3/weights/best.pt  # ✅ Exists
+results/onnx_models/yolov8n_is.onnx             # ❌ Missing
+```
+
+##### **2. Invalid YOLO Export Parameters**
+```python
+# PROBLEMATIC CODE (Old):
+model.export(
+    format="onnx", 
+    imgsz=self.model_config.default_img_size, 
+    opset=12, 
+    simplify=True, 
+    file=onnx_output_path  # ❌ Invalid parameter
+)
+
+# FIXED CODE (New):
+model.export(
+    format="onnx", 
+    imgsz=self.model_config.default_img_size, 
+    opset=12, 
+    simplify=True
+)
+# ✅ Export to default location, then move to target
+```
+
+##### **3. GPU vs CPU Dependency Issues**
+```bash
+# GPU Environment Issues:
+- CUDA version mismatches
+- PyTorch GPU vs CPU versions
+- Memory constraints during export
+- Driver compatibility issues
+
+# CPU Environment Issues:
+- Missing CPU-specific dependencies
+- Slower export times
+- Memory limitations
+```
+
+#### **Solutions Implemented:**
+
+##### **1. Export from Existing Models**
+```python
+def export_onnx_from_existing_model(self, model_version: str) -> bool:
+    """
+    Export ONNX model from existing training results.
+    """
+    # Find existing training run
+    existing_run = self.find_existing_training_run(model_version)
+    pytorch_model_path = os.path.join(existing_run, "weights", "best.pt")
+    
+    # Load and export
+    model = YOLO(pytorch_model_path)
+    model.export(format="onnx", imgsz=self.model_config.default_img_size, 
+                opset=12, simplify=True)
+    
+    # Move to correct location
+    exported_files = [f for f in os.listdir(os.path.dirname(pytorch_model_path)) 
+                     if f.endswith('.onnx')]
+    if exported_files:
+        source_path = os.path.join(os.path.dirname(pytorch_model_path), exported_files[0])
+        shutil.move(source_path, onnx_output_path)
+```
+
+##### **2. Fixed Export Parameters**
+```python
+# ✅ Correct export syntax
+model.export(
+    format="onnx",           # Export format
+    imgsz=(640, 640),       # Image size
+    opset=12,               # ONNX opset version
+    simplify=True,           # Simplify model
+    # file parameter removed - exports to default location
+)
+```
+
+### Problem 2: RKNN Conversion Failures
+
+#### **Symptoms:**
+- Empty `results/rknn_models/` directory
+- Error: `"ONNX model not found at results/onnx_models/yolov8n_is.onnx"`
+- RKNN conversion skipped
+
+#### **Root Causes:**
+
+##### **1. Missing ONNX Model**
+```bash
+# Dependency chain:
+PyTorch Model (.pt) → ONNX Model (.onnx) → RKNN Model (.rknn)
+     ↓                    ↓                    ↓
+  Training           ONNX Export          RKNN Conversion
+```
+
+##### **2. RKNN-Toolkit2 Dependencies**
+```bash
+# Required RKNN-Toolkit2 setup:
+git clone -b v2.3.0 https://github.com/airockchip/rknn-toolkit2.git
+cd rknn-toolkit2/rknn-toolkit2/packages/x86_64/
+pip3 install -r requirements_cp11-2.3.0.txt
+pip3 install ./rknn_toolkit2-2.3.0-cp11-cp11-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+```
+
+##### **3. GPU vs CPU Environment Issues**
+```python
+# GPU Environment Problems:
+- CUDA memory conflicts
+- GPU driver compatibility
+- PyTorch GPU version conflicts
+
+# CPU Environment Problems:
+- Slower conversion times
+- Memory limitations
+- Missing CPU-specific libraries
+```
+
+#### **Solutions Implemented:**
+
+##### **1. Graceful Fallback**
+```python
+def convert_and_zip_rknn_models(self, model_version: str) -> bool:
+    """
+    Convert ONNX to RKNN with graceful fallback.
+    """
+    onnx_model_path = self._get_onnx_path(model_version)
+    
+    # Check if ONNX exists
+    if not os.path.exists(onnx_model_path):
+        logger.warning(f"ONNX model not found at {onnx_model_path}. Skipping RKNN conversion.")
+        return False  # ✅ Graceful fallback instead of crash
+    
+    # Proceed with conversion
+    self.rknn_converter.convert_onnx_to_rknn(onnx_model_path, model_version)
+```
+
+### Problem 3: GPU vs CPU Dependency Issues
+
+#### **GPU-Specific Problems:**
+
+##### **1. CUDA Version Conflicts**
+```bash
+# Check CUDA versions:
+nvidia-smi                    # GPU driver version
+nvcc --version               # CUDA compiler version
+python -c "import torch; print(torch.version.cuda)"  # PyTorch CUDA version
+
+# Common conflicts:
+- Driver: 11.8, CUDA: 11.8, PyTorch: 11.8 ✅
+- Driver: 11.8, CUDA: 11.8, PyTorch: 12.1 ❌
+- Driver: 12.1, CUDA: 11.8, PyTorch: 11.8 ❌
+```
+
+##### **2. Memory Issues**
+```python
+# GPU Memory Problems:
+- CUDA out of memory during export
+- Insufficient VRAM for large models
+- Memory fragmentation
+
+# Solutions:
+import torch
+torch.cuda.empty_cache()  # Clear GPU cache
+torch.cuda.reset_peak_memory_stats()  # Reset memory stats
+```
+
+##### **3. PyTorch GPU Installation Issues**
+```bash
+# Correct PyTorch GPU installation:
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# Verify installation:
+python -c "import torch; print(torch.cuda.is_available())"
+python -c "import torch; print(torch.cuda.get_device_name(0))"
+```
+
+#### **CPU-Specific Problems:**
+
+##### **1. Missing CPU Dependencies**
+```bash
+# Required CPU packages:
+pip install onnx onnxruntime
+pip install opencv-python
+pip install numpy scipy
+
+# For RKNN conversion:
+pip install rknn-toolkit2  # CPU version
+```
+
+##### **2. Performance Issues**
+```python
+# CPU Performance Solutions:
+- Use smaller batch sizes
+- Reduce image resolution
+- Enable CPU optimizations
+- Use multi-threading where possible
+```
+
+### Problem 4: Pipeline Execution Issues
+
+#### **RGBA Error in Inference**
+```python
+# Error: "RGBA values should be within 0-1 range"
+# Cause: Image format compatibility issues in inference visualization
+
+# Solution: Skip problematic inference step
+def execute_yolo_pipeline_safe(self, model_version: str, ...):
+    # ... other steps ...
+    logger.info(f"⏭️ Skipping run_inference_and_visualization (RGBA issue)")
+    # ... continue with other steps ...
+```
+
+#### **Missing Dependencies**
+```bash
+# Common missing dependencies:
+pip install ultralytics        # YOLO models
+pip install opencv-python     # Image processing
+pip install matplotlib        # Plotting
+pip install seaborn          # Enhanced plotting
+pip install pandas           # Data manipulation
+pip install scikit-learn     # Machine learning utilities
+```
+
+## 🔧 **Complete Solution Implementation**
+
+### **1. New Pipeline Types**
+
+```python
+# Safe Pipeline (skips inference)
+execute_yolo_pipeline_safe()
+
+# ONNX Export Pipeline (recommended)
+execute_yolo_pipeline_with_onnx()
+
+# Complete Pipeline (may fail on inference)
+execute_yolo_pipeline_complete()
+```
+
+### **2. Command-Line Options**
+
+```bash
+# Basic usage (safe)
+python main_colab.py --models v8n
+
+# ONNX export (recommended)
+python main_colab.py --models v8n --onnx-export
+
+# Complete pipeline
+python main_colab.py --models v8n --complete-pipeline
+```
+
+### **3. Environment-Specific Solutions**
+
+#### **For GPU Environments:**
+```bash
+# 1. Check CUDA compatibility
+python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}, Version: {torch.version.cuda}')"
+
+# 2. Clear GPU memory before export
+python -c "import torch; torch.cuda.empty_cache()"
+
+# 3. Use GPU-optimized PyTorch
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+#### **For CPU Environments:**
+```bash
+# 1. Install CPU-specific packages
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# 2. Install ONNX runtime
+pip install onnxruntime
+
+# 3. Install RKNN toolkit (CPU version)
+pip install rknn-toolkit2
+```
+
+## 📊 **Verification Commands**
+
+### **Check ONNX Export:**
+```bash
+# Verify ONNX model exists
+ls -la results/onnx_models/
+
+# Test ONNX model
+python -c "import onnx; model = onnx.load('results/onnx_models/yolov8n_is.onnx'); print('ONNX model valid')"
+```
+
+### **Check RKNN Conversion:**
+```bash
+# Verify RKNN model exists
+ls -la results/rknn_models/
+
+# Check RKNN model size
+du -h results/rknn_models/yolov8n_is.rknn
+```
+
+### **Check Environment:**
+```bash
+# GPU environment
+python -c "import torch; print(f'GPU: {torch.cuda.is_available()}, Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
+
+# ONNX environment
+python -c "import onnx; print('ONNX available')"
+
+# RKNN environment
+python -c "import rknn_toolkit2; print('RKNN available')"
+```
+
+## 🎯 **Recommended Workflow**
+
+### **For Your Use Case:**
+
+1. **Use ONNX Export Pipeline:**
+   ```bash
+   python main_colab.py --models v8n --onnx-export
+   ```
+
+2. **Verify Results:**
+   ```bash
+   ls -la results/onnx_models/
+   ls -la results/rknn_models/
+   ```
+
+3. **Check for Errors:**
+   ```bash
+   # Look for these success messages:
+   # ✅ ONNX model successfully exported to: results/onnx_models/yolov8n_is.onnx
+   # ✅ RKNN conversion and zipping completed for YOLOv8n
+   ```
+
+### **If Problems Persist:**
+
+1. **Check Dependencies:**
+   ```bash
+   pip list | grep -E "(torch|onnx|rknn|ultralytics)"
+   ```
+
+2. **Clear Cache:**
+   ```bash
+   python -c "import torch; torch.cuda.empty_cache() if torch.cuda.is_available() else None"
+   ```
+
+3. **Reinstall Dependencies:**
+   ```bash
+   pip install --upgrade ultralytics onnx onnxruntime
+   ```
+
+## 📋 **Summary**
+
+The main issues were:
+1. **ONNX models weren't created during original training**
+2. **Invalid export parameters in YOLO export**
+3. **GPU/CPU dependency conflicts**
+4. **Missing graceful error handling**
+
+The solutions implemented:
+1. **Export ONNX from existing models**
+2. **Fixed export parameters**
+3. **Added environment-specific handling**
+4. **Created multiple pipeline options**
+
+This ensures you get all the models you need while avoiding the problematic inference step! 🎉 
