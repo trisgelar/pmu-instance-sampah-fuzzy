@@ -45,6 +45,15 @@ tests/
 └── utils/                   # Utility test scripts
     ├── test_cuda.py
     └── verify_python311_compatibility.py
+└── training/                # Training system tests
+    ├── enhanced_training_system.py
+    ├── simple_enhanced_training.py
+    └── README.md
+└── existing_results/        # Existing results usage tests
+    ├── use_existing_training.py
+    ├── use_existing_results.py
+    ├── use_existing_results_safe.py
+    └── README.md
 ```
 
 ## 🧪 Test Categories
@@ -80,6 +89,16 @@ tests/
 - **Purpose**: Environment and compatibility verification
 - **Scope**: System requirements and dependencies
 - **Examples**: CUDA setup verification, Python version compatibility
+
+### Training Tests (`training/`)
+- **Purpose**: Test enhanced training systems with checkpoint functionality
+- **Scope**: Training workflows, checkpoint management, local and Colab execution
+- **Examples**: Enhanced training system, simple training simulation, checkpoint operations
+
+### Existing Results Tests (`existing_results/`)
+- **Purpose**: Test using existing training results without retraining
+- **Scope**: Finding existing runs, analysis, inference, and RKNN conversion
+- **Examples**: Safe analysis, inference visualization, model conversion
 
 ## 🧪 Dynamic Directory Fix Tests
 
@@ -141,6 +160,12 @@ python run_tests.py --category dataset_tools
 
 # Utility tests only
 python run_tests.py --category utils
+
+# Training tests only
+python run_tests.py --category training
+
+# Existing results tests only
+python run_tests.py --category existing_results
 ```
 
 ### Run Specific Tests

@@ -491,6 +491,162 @@ class WasteDetectionSystemColab:
             logger.error(f"Failed to clear CUDA cache: {e}")
             return False
 
+    def find_existing_training_run(self, model_version: str) -> Optional[str]:
+        """
+        Find existing training run directory for a given model version.
+        
+        Args:
+            model_version: Model version to find (e.g., "v8n", "v10n", "v11n")
+            
+        Returns:
+            Optional[str]: Path to existing training run directory or None if not found
+        """
+        try:
+            train_name = f"segment_train_{model_version}"
+            model_dir = self.model_processor.MODEL_DIR
+            
+            # Find the most recent training directory
+            existing_runs = []
+            for item in os.listdir(model_dir):
+                if item.startswith(train_name) and os.path.isdir(os.path.join(model_dir, item)):
+                    run_path = os.path.join(model_dir, item)
+                    # Check if it has weights
+                    weights_path = os.path.join(run_path, "weights", "best.pt")
+                    if os.path.exists(weights_path):
+                        existing_runs.append(run_path)
+            
+            if existing_runs:
+                # Sort by modification time (most recent first)
+                existing_runs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+                latest_run = existing_runs[0]
+                logger.info(f"Found existing training run for YOLO{model_version}: {latest_run}")
+                return latest_run
+            else:
+                logger.info(f"No existing training run found for YOLO{model_version}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error finding existing training run: {str(e)}")
+            return None
+
+    def get_or_train_model(self, model_version: str, force_retrain: bool = False, 
+                          epochs: Optional[int] = None, batch_size: Optional[int] = None) -> Optional[str]:
+        """
+        Get existing training run or train new model based on preference.
+        
+        Args:
+            model_version: Model version to train/find
+            force_retrain: If True, always train new model
+            epochs: Number of training epochs (if training)
+            batch_size: Training batch size (if training)
+            
+        Returns:
+            Optional[str]: Path to training run directory
+        """
+        try:
+            if not force_retrain:
+                # Try to find existing training run
+                existing_run = self.find_existing_training_run(model_version)
+                if existing_run:
+                    logger.info(f"Using existing training run for YOLO{model_version}")
+                    return existing_run
+            
+            # Train new model if no existing run found or force_retrain is True
+            logger.info(f"Training new model for YOLO{model_version}")
+            return self.train_and_export_model(model_version, epochs, batch_size)
+            
+        except Exception as e:
+            logger.error(f"Error in get_or_train_model: {str(e)}")
+            return None
+
+    def execute_yolo_pipeline(self, model_version: str, force_retrain: bool = False, 
+                             epochs: Optional[int] = None, batch_size: Optional[int] = None,
+                             num_inference_images: int = 6) -> bool:
+        """
+        Execute complete YOLO pipeline for a specific model version.
+        
+        Args:
+            model_version: Model version to train/use (e.g., "v8n", "v10n", "v11n")
+            force_retrain: If True, always train new model
+            epochs: Number of training epochs (if training)
+            batch_size: Training batch size (if training)
+            num_inference_images: Number of images for inference
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            logger.info(f"🚀 Starting YOLO{model_version} pipeline")
+            
+            # Get or train model
+            run_dir = self.get_or_train_model(model_version, force_retrain, epochs, batch_size)
+            
+            if not run_dir:
+                logger.error(f"❌ Failed to get or train model for YOLO{model_version}")
+                return False
+            
+            logger.info(f"✅ Using training run: {run_dir}")
+            
+            # Execute pipeline steps
+            logger.info(f"📊 Analyzing training run for YOLO{model_version}")
+            self.analyze_training_run(run_dir, model_version)
+            
+            logger.info(f"🔍 Running inference and visualization for YOLO{model_version}")
+            self.run_inference_and_visualization(run_dir, model_version, num_inference_images)
+            
+            logger.info(f"📦 Converting and zipping RKNN models for YOLO{model_version}")
+            self.convert_and_zip_rknn_models(model_version)
+            
+            logger.info(f"🎉 YOLO{model_version} pipeline completed successfully!")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ YOLO{model_version} pipeline failed: {str(e)}")
+            return False
+
+    def execute_yolo_pipeline_safe(self, model_version: str, force_retrain: bool = False, 
+                                  epochs: Optional[int] = None, batch_size: Optional[int] = None) -> bool:
+        """
+        Execute safe YOLO pipeline for a specific model version (skips problematic inference).
+        
+        Args:
+            model_version: Model version to train/use (e.g., "v8n", "v10n", "v11n")
+            force_retrain: If True, always train new model
+            epochs: Number of training epochs (if training)
+            batch_size: Training batch size (if training)
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            logger.info(f"🚀 Starting safe YOLO{model_version} pipeline")
+            
+            # Get or train model
+            run_dir = self.get_or_train_model(model_version, force_retrain, epochs, batch_size)
+            
+            if not run_dir:
+                logger.error(f"❌ Failed to get or train model for YOLO{model_version}")
+                return False
+            
+            logger.info(f"✅ Using training run: {run_dir}")
+            
+            # Execute safe pipeline steps
+            logger.info(f"📊 Analyzing training run for YOLO{model_version}")
+            self.analyze_training_run(run_dir, model_version)
+            
+            # Skip inference visualization (has RGBA issue)
+            logger.info(f"⏭️ Skipping run_inference_and_visualization (RGBA issue)")
+            
+            logger.info(f"📦 Converting and zipping RKNN models for YOLO{model_version}")
+            self.convert_and_zip_rknn_models(model_version)
+            
+            logger.info(f"🎉 Safe YOLO{model_version} pipeline completed successfully!")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Safe YOLO{model_version} pipeline failed: {str(e)}")
+            return False
+
 
 # --- Fungsi Utama (Main Execution Flow untuk Colab) ---
 def main():
@@ -572,28 +728,19 @@ def main():
 
         #--- Eksekusi Pipeline untuk YOLOv8n Instance Segmentation ---
         try:
-            run_dir_v8n = system_colab.train_and_export_model("v8n")
-            #system_colab.analyze_training_run(run_dir_v8n, "v8n")
-            #system_colab.run_inference_and_visualization(run_dir_v8n, "v8n", num_inference_images=6)
-            # system_colab.convert_and_zip_rknn_models("v8n")
+            system_colab.execute_yolo_pipeline_safe("v8n", force_retrain=False, epochs=200, batch_size=16)
         except Exception as e:
             logger.error(f"YOLOv8n pipeline failed: {str(e)}")
         
         # --- Eksekusi Pipeline untuk YOLOv10n Instance Segmentation ---
         # try:
-        #     run_dir_v10n = system_colab.train_and_export_model("v10n")
-        #     system_colab.analyze_training_run(run_dir_v10n, "v10n")
-        #     system_colab.run_inference_and_visualization(run_dir_v10n, "v10n", num_inference_images=6)
-        #     #system_colab.convert_and_zip_rknn_models("v10n")
+        #     system_colab.execute_yolo_pipeline_safe("v10n", force_retrain=False, epochs=200, batch_size=16)
         # except Exception as e:
         #     logger.error(f"YOLOv10n pipeline failed: {str(e)}")
 
         # --- Eksekusi Pipeline untuk YOLOv11n Instance Segmentation ---
         # try:
-        #     run_dir_v11n = system_colab.train_and_export_model("v11n")
-        #     system_colab.analyze_training_run(run_dir_v11n, "v11n")
-        #     system_colab.run_inference_and_visualization(run_dir_v11n, "v11n", num_inference_images=6)
-        #     #system_colab.convert_and_zip_rknn_models("v11n")
+        #     system_colab.execute_yolo_pipeline_safe("v11n", force_retrain=False, epochs=200, batch_size=16)
         # except Exception as e:
         #     logger.error(f"YOLOv11n pipeline failed: {str(e)}")
 

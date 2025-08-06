@@ -191,22 +191,17 @@ class ModelProcessor:
                 raise ModelError(f"Training failed for YOLO{model_version}: {str(e)}") from e
 
             # Export to ONNX - dynamically find the actual training directory
-            # Ultralytics may append numbers to avoid conflicts (e.g., segment_train_v8n2)
-            segment_dir = os.path.join(self.MODEL_DIR, "segment")
-            if not os.path.exists(segment_dir):
-                raise ModelError(f"Segment directory not found at {segment_dir}")
-            
-            # Find the actual training directory (may have number suffix)
+            # Ultralytics creates directories directly in MODEL_DIR (e.g., segment_train_v8n3)
             actual_train_dir = None
-            for item in os.listdir(segment_dir):
-                if item.startswith(train_name) and os.path.isdir(os.path.join(segment_dir, item)):
+            for item in os.listdir(self.MODEL_DIR):
+                if item.startswith(train_name) and os.path.isdir(os.path.join(self.MODEL_DIR, item)):
                     actual_train_dir = item
                     break
             
             if not actual_train_dir:
-                raise ModelError(f"Training directory not found in {segment_dir}. Expected pattern: {train_name}*")
+                raise ModelError(f"Training directory not found in {self.MODEL_DIR}. Expected pattern: {train_name}*")
             
-            pytorch_model_path = os.path.join(self.MODEL_DIR, "segment", actual_train_dir, "weights", "best.pt")
+            pytorch_model_path = os.path.join(self.MODEL_DIR, actual_train_dir, "weights", "best.pt")
             
             if not os.path.exists(pytorch_model_path):
                 raise ModelError(f"Trained model not found at {pytorch_model_path}")
@@ -226,7 +221,7 @@ class ModelProcessor:
             except Exception as e:
                 raise ModelError(f"Failed to export model to ONNX: {str(e)}") from e
 
-            train_run_dir = os.path.join(self.MODEL_DIR, "segment", actual_train_dir)
+            train_run_dir = os.path.join(self.MODEL_DIR, actual_train_dir)
             return results, train_run_dir
             
         except Exception as e:
@@ -248,21 +243,19 @@ class ModelProcessor:
             self._validate_model_version(model_version)
             
             train_name = f"segment_train_{model_version}"
-            segment_dir = os.path.join(self.MODEL_DIR, "segment")
             
             # Find the actual training directory (may have number suffix)
             actual_train_dir = None
-            if os.path.exists(segment_dir):
-                for item in os.listdir(segment_dir):
-                    if item.startswith(train_name) and os.path.isdir(os.path.join(segment_dir, item)):
-                        actual_train_dir = item
-                        break
+            for item in os.listdir(self.MODEL_DIR):
+                if item.startswith(train_name) and os.path.isdir(os.path.join(self.MODEL_DIR, item)):
+                    actual_train_dir = item
+                    break
             
             if not actual_train_dir:
                 logger.warning(f"Training directory not found for {model_version}. Expected pattern: {train_name}*")
                 return False
             
-            source_folder = os.path.join(self.MODEL_DIR, "segment", actual_train_dir, "weights")
+            source_folder = os.path.join(self.MODEL_DIR, actual_train_dir, "weights")
             output_filename = f"segment_{model_version}_weights"
             
             if not os.path.exists(source_folder):

@@ -1,7 +1,7 @@
 # file: modules/dataset_manager.py
 import os
 import shutil
-from ruamel.yaml import YAML
+import yaml
 import json
 import logging
 from typing import Optional, Dict, Any, List, Tuple
@@ -13,10 +13,11 @@ from modules.exceptions import DatasetError, ConfigurationError, APIError, FileO
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create YAML instance
-yaml = YAML()
-yaml.preserve_quotes = True
-yaml.indent(mapping=2, sequence=4, offset=2)
+# Use safe loading as recommended by PyYAML documentation
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 class DatasetManager:
     """
@@ -94,7 +95,7 @@ class DatasetManager:
                 )
             
             with open(secrets_file, 'r', encoding='utf-8') as f:
-                secrets = yaml.load(f)
+                secrets = yaml.load(f, Loader=Loader)
                 if not secrets:
                     raise ConfigurationError(f"File '{secrets_file}' is empty or invalid")
                 
@@ -385,7 +386,7 @@ class DatasetManager:
         
         try:
             with open(data_yaml_path, 'w', encoding='utf-8') as f:
-                yaml.dump(yolo_data_yaml, f)
+                yaml.dump(yolo_data_yaml, f, Dumper=Dumper, sort_keys=False, default_flow_style=False)
             
             logger.info(f"✅ Created YOLO data.yaml: {data_yaml_path}")
             logger.info(f"Using absolute path: {os.path.abspath(dataset_path)}")
@@ -539,7 +540,7 @@ class DatasetManager:
         
         try:
             with open(self.IS_DATA_YAML, 'w', encoding='utf-8') as f:
-                yaml.dump(is_data_yaml_content, f)
+                yaml.dump(is_data_yaml_content, f, Dumper=Dumper, sort_keys=False, default_flow_style=False)
             logger.info(f"data.yaml created successfully at {self.IS_DATA_YAML}")
         except Exception as e:
             raise FileOperationError(f"Failed to create data.yaml: {str(e)}") from e
@@ -571,7 +572,7 @@ class DatasetManager:
         
         try:
             with open(self.IS_DATA_YAML, 'w', encoding='utf-8') as f:
-                yaml.dump(is_data_yaml_content, f, sort_keys=False, default_flow_style=False)
+                yaml.dump(is_data_yaml_content, f, Dumper=Dumper, sort_keys=False, default_flow_style=False)
             logger.info(f"data.yaml with standard YOLO format created successfully at {self.IS_DATA_YAML}")
             logger.info(f"Using paths: train={path_train}, val={path_val}, test={path_test}")
         except Exception as e:
@@ -683,7 +684,7 @@ class DatasetManager:
             
             if os.path.exists(data_yaml_path):
                 with open(data_yaml_path, 'r', encoding='utf-8') as f:
-                    data = yaml.safe_load(f)
+                    data = yaml.load(f, Loader=Loader)
                     names = data.get('names', {})
                     path_value = data.get('path', '')
                     
@@ -769,7 +770,7 @@ class DatasetManager:
         try:
             # Read current data.yaml
             with open(data_yaml_path, 'r', encoding='utf-8') as f:
-                data = yaml.safe_load(f)
+                data = yaml.load(f, Loader=Loader)
             
             # Check if path is relative
             current_path = data.get('path', '')
@@ -782,7 +783,7 @@ class DatasetManager:
                 
                 # Write back the updated data.yaml
                 with open(data_yaml_path, 'w', encoding='utf-8') as f:
-                    yaml.dump(data, f, sort_keys=False, default_flow_style=False)
+                    yaml.dump(data, f, Dumper=Dumper, sort_keys=False, default_flow_style=False)
                 
                 logger.info(f"✅ Successfully converted to absolute path: {os.path.abspath(dataset_path)}")
                 return True
@@ -801,7 +802,7 @@ class DatasetManager:
         if results['data_yaml_exists']:
             try:
                 with open(data_yaml_path, 'r', encoding='utf-8') as f:
-                    data = yaml.safe_load(f)
+                    data = yaml.load(f, Loader=Loader)
                     results['data_yaml_content'] = data
                     
                     # Check class names
