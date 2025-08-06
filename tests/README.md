@@ -10,7 +10,9 @@ tests/
 │   ├── test_config_manager.py
 │   ├── test_exceptions.py
 │   ├── test_fuzzy_area_classifier.py
-│   └── test_secrets_validation.py
+│   ├── test_secrets_validation.py
+│   ├── test_dynamic_directory_fix.py
+│   └── test_dynamic_directory_logic.py
 ├── integration/             # Integration tests for system-wide functionality
 │   ├── test_main_colab.py
 │   ├── test_dataset_fix.py
@@ -50,7 +52,7 @@ tests/
 ### Unit Tests (`unit/`)
 - **Purpose**: Test individual modules and components in isolation
 - **Scope**: Single functions, classes, or small groups of related functionality
-- **Examples**: Configuration management, exception handling, fuzzy logic
+- **Examples**: Configuration management, exception handling, fuzzy logic, dynamic directory naming
 
 ### Integration Tests (`integration/`)
 - **Purpose**: Test how different modules work together
@@ -79,9 +81,43 @@ tests/
 - **Scope**: System requirements and dependencies
 - **Examples**: CUDA setup verification, Python version compatibility
 
-## 🚀 Running Tests
+## 🧪 Dynamic Directory Fix Tests
 
-### Run All Tests
+### Overview
+The dynamic directory fix tests verify that the system can correctly handle Ultralytics' automatic directory naming with suffixes (e.g., `segment_train_v8n2` instead of `segment_train_v8n`).
+
+### Test Files
+- **`test_dynamic_directory_fix.py`**: Comprehensive test suite for the ModelProcessor's dynamic directory finding functionality
+- **`test_dynamic_directory_logic.py`**: Focused test for directory finding logic without ultralytics dependencies
+
+### Key Test Cases
+1. **No suffix**: `segment_train_v8n` - Found correctly
+2. **With suffix**: `segment_train_v8n2` - Found correctly  
+3. **Large suffix**: `segment_train_v8n15` - Found correctly
+4. **Multiple versions**: `v8n`, `v10n`, `v11n` - All found correctly
+5. **No directory**: Returns `None` when no directory exists
+6. **Pattern matching**: Finds directories with correct prefixes
+7. **Multiple directories**: Handles multiple directories with same prefix
+8. **Case sensitivity**: Correctly handles case differences
+9. **Partial matches**: Finds directories that start with the pattern
+
+### Running Dynamic Directory Tests
+```bash
+# Run both dynamic directory tests
+python tests/unit/test_dynamic_directory_logic.py
+python tests/unit/test_dynamic_directory_fix.py
+
+# Run with unittest
+python -m unittest tests.unit.test_dynamic_directory_logic
+python -m unittest tests.unit.test_dynamic_directory_fix
+```
+
+### Problem Solved
+- **Original Issue**: Hardcoded paths expected `segment_train_v8n` but Ultralytics created `segment_train_v8n2`
+- **Solution**: Dynamic directory finding that searches for directories starting with `segment_train_{model_version}`
+- **Benefits**: Compatible with any suffix Ultralytics adds, future-proof, robust error handling
+
+## 🚀 Running Tests
 ```bash
 python run_tests.py
 ```
@@ -170,6 +206,9 @@ Brief description of what this test does.
 
 import unittest
 import logging
+import tempfile
+import shutil
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -180,7 +219,8 @@ class TestClassName(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        pass
+        self.temp_dir = tempfile.mkdtemp()
+        # Set up test environment
     
     def test_specific_functionality(self):
         """Test specific functionality."""
@@ -189,7 +229,7 @@ class TestClassName(unittest.TestCase):
     
     def tearDown(self):
         """Clean up after tests."""
-        pass
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
 
 if __name__ == "__main__":
     unittest.main()

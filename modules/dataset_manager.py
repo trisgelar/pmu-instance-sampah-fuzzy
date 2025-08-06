@@ -1,7 +1,7 @@
 # file: modules/dataset_manager.py
 import os
 import shutil
-import yaml
+from ruamel.yaml import YAML
 import json
 import logging
 from typing import Optional, Dict, Any, List, Tuple
@@ -12,6 +12,11 @@ from modules.exceptions import DatasetError, ConfigurationError, APIError, FileO
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Create YAML instance
+yaml = YAML()
+yaml.preserve_quotes = True
+yaml.indent(mapping=2, sequence=4, offset=2)
 
 class DatasetManager:
     """
@@ -89,7 +94,7 @@ class DatasetManager:
                 )
             
             with open(secrets_file, 'r', encoding='utf-8') as f:
-                secrets = yaml.safe_load(f)
+                secrets = yaml.load(f)
                 if not secrets:
                     raise ConfigurationError(f"File '{secrets_file}' is empty or invalid")
                 
@@ -105,7 +110,7 @@ class DatasetManager:
                 
                 return api_key
                 
-        except yaml.YAMLError as e:
+        except Exception as e:
             raise ConfigurationError(f"Invalid YAML format in '{secrets_file}': {str(e)}") from e
         except Exception as e:
             raise ConfigurationError(f"Failed to load API key: {str(e)}") from e
@@ -380,7 +385,7 @@ class DatasetManager:
         
         try:
             with open(data_yaml_path, 'w', encoding='utf-8') as f:
-                yaml.dump(yolo_data_yaml, f, sort_keys=False, default_flow_style=False)
+                yaml.dump(yolo_data_yaml, f)
             
             logger.info(f"✅ Created YOLO data.yaml: {data_yaml_path}")
             logger.info(f"Using absolute path: {os.path.abspath(dataset_path)}")
@@ -534,7 +539,7 @@ class DatasetManager:
         
         try:
             with open(self.IS_DATA_YAML, 'w', encoding='utf-8') as f:
-                yaml.dump(is_data_yaml_content, f, sort_keys=False, default_flow_style=False)
+                yaml.dump(is_data_yaml_content, f)
             logger.info(f"data.yaml created successfully at {self.IS_DATA_YAML}")
         except Exception as e:
             raise FileOperationError(f"Failed to create data.yaml: {str(e)}") from e
