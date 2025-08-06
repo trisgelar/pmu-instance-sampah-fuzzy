@@ -40,7 +40,7 @@ class DriveManager:
         print(f"\n--- Menyimpan semua hasil ke Google Drive ---")
 
         # Daftar file dan folder yang ingin disimpan
-        items_to_save = ['datasets.zip', 'rknn_models.zip', 'results/onnx_models', 'results/runs']
+        items_to_save = ['compressed/datasets.zip', 'compressed/rknn_models.zip', 'compressed/segment_v8n_weights.zip', 'compressed/segment_v10n_weights.zip', 'compressed/segment_v11n_weights.zip', 'compressed/yolo*_segment_inference_results.zip', 'results/onnx_models', 'results/runs']
         
         for item in items_to_save:
             source_path = os.path.join(source_dir, item)

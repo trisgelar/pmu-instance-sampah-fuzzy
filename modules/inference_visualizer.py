@@ -226,11 +226,15 @@ class InferenceVisualizer:
         Mengkompres folder yang berisi gambar hasil superimpose menjadi file zip.
         """
         source_folder = os.path.join(self.INFERENCE_OUTPUT_DIR, f"yolo{model_version}_segment_results")
-        output_filename = f"yolo{model_version}_segment_inference_results"
+        # Get compressed directory from config
+        compressed_dir = getattr(self, 'config', {}).get('dataset', {}).get('default_compressed_dir', 'compressed')
+        os.makedirs(compressed_dir, exist_ok=True)
+        
+        output_filename = os.path.join(compressed_dir, f"yolo{model_version}_segment_inference_results")
         if os.path.exists(source_folder):
             print(f"\n--- Mengkompresi folder hasil inferensi untuk YOLO{model_version} (segmentasi) ---")
             try:
-                shutil.make_archive(os.path.join(self.INFERENCE_OUTPUT_DIR, output_filename), 'zip', source_folder)
+                shutil.make_archive(output_filename, 'zip', source_folder)
                 print(f"Folder '{source_folder}' berhasil dikompresi menjadi '{output_filename}.zip'")
             except Exception as e:
                 print(f"Gagal mengkompresi folder hasil inferensi '{source_folder}': {e}")

@@ -410,10 +410,13 @@ class DatasetManager:
         logger.info("Preparing Instance Segmentation Dataset")
         
         try:
-            # Check for existing dataset.zip in root folder
-            dataset_zip_path = "dataset.zip"
+            # Check for existing dataset.zip in compressed folder first, then root
+            dataset_zip_path = "compressed/dataset.zip"
+            if not os.path.exists(dataset_zip_path):
+                dataset_zip_path = "dataset.zip"
+            
             if os.path.exists(dataset_zip_path):
-                logger.info(f"Found existing {dataset_zip_path} in root folder. Using local dataset.")
+                logger.info(f"Found existing {dataset_zip_path}. Using local dataset.")
                 is_dataset_root_path = self._extract_local_dataset(dataset_zip_path)
             else:
                 logger.info(f"No {dataset_zip_path} found. Downloading from Roboflow...")
@@ -640,7 +643,11 @@ class DatasetManager:
             bool: True if successful, False otherwise
         """
         source_folder = self.DATASET_DIR
-        output_filename = "datasets"
+        # Get compressed directory from config
+        compressed_dir = getattr(self, 'config', {}).get('dataset', {}).get('default_compressed_dir', 'compressed')
+        os.makedirs(compressed_dir, exist_ok=True)
+        
+        output_filename = os.path.join(compressed_dir, "datasets")
         
         if not os.path.exists(source_folder):
             logger.warning(f"Dataset folder '{source_folder}' not found. Cannot compress.")

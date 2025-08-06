@@ -14,8 +14,13 @@ def extract_dataset():
     """Extract the datasets.zip file."""
     print("📦 Extracting datasets.zip...")
     
-    if not os.path.exists("datasets.zip"):
-        print("❌ datasets.zip not found")
+    # Check in compressed folder first, then root
+    datasets_zip_path = "compressed/datasets.zip"
+    if not os.path.exists(datasets_zip_path):
+        datasets_zip_path = "datasets.zip"
+    
+    if not os.path.exists(datasets_zip_path):
+        print("❌ datasets.zip not found in compressed/ or root folder")
         return False
     
     try:
@@ -23,14 +28,14 @@ def extract_dataset():
         os.makedirs("datasets", exist_ok=True)
         
         # Extract the zip file
-        with zipfile.ZipFile("datasets.zip", 'r') as zip_ref:
+        with zipfile.ZipFile(datasets_zip_path, 'r') as zip_ref:
             zip_ref.extractall("datasets")
         
-        print("✅ Successfully extracted datasets.zip")
+        print(f"✅ Successfully extracted {datasets_zip_path}")
         return True
         
     except Exception as e:
-        print(f"❌ Error extracting datasets.zip: {e}")
+        print(f"❌ Error extracting {datasets_zip_path}: {e}")
         return False
 
 def check_extracted_structure():

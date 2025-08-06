@@ -76,7 +76,11 @@ class RknnConverter:
         Melakukan kompresi (zip) pada folder 'rknn_models'.
         """
         source_folder = self.RKNN_MODEL_DIR
-        output_filename = "rknn_models"
+        # Get compressed directory from config
+        compressed_dir = getattr(self, 'config', {}).get('dataset', {}).get('default_compressed_dir', 'compressed')
+        os.makedirs(compressed_dir, exist_ok=True)
+        
+        output_filename = os.path.join(compressed_dir, "rknn_models")
         if os.path.exists(source_folder):
             print(f"\n--- Mengkompresi folder RKNN models ---")
             try:

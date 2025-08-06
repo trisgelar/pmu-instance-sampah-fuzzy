@@ -37,10 +37,18 @@ dataset:
   default_model_dir: "results/runs"
   default_onnx_dir: "results/onnx_models"
   default_rknn_dir: "results/rknn_models"
+  default_compressed_dir: "compressed"
   
   # File patterns
   supported_image_extensions: [".jpg", ".jpeg", ".png", ".bmp"]
   supported_video_extensions: [".mp4", ".avi", ".mov"]
+  
+  # Compressed files configuration
+  compressed_files:
+    datasets_zip: "datasets.zip"
+    rknn_models_zip: "rknn_models.zip"
+    weights_zip_pattern: "segment_{model_version}_weights.zip"
+    inference_zip_pattern: "segment_{model_version}_inference.zip"
 
 fuzzy:
   # Membership function parameters for area classification

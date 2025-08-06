@@ -256,7 +256,11 @@ class ModelProcessor:
                 return False
             
             source_folder = os.path.join(self.MODEL_DIR, actual_train_dir, "weights")
-            output_filename = f"segment_{model_version}_weights"
+            # Get compressed directory from config
+            compressed_dir = self.config.get('dataset', {}).get('default_compressed_dir', 'compressed')
+            os.makedirs(compressed_dir, exist_ok=True)
+            
+            output_filename = os.path.join(compressed_dir, f"segment_{model_version}_weights")
             
             if not os.path.exists(source_folder):
                 logger.warning(f"Weights folder '{source_folder}' not found. Cannot compress.")
