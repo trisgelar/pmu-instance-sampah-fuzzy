@@ -1,0 +1,465 @@
+# Pipeline Scripts Guide
+
+## 📋 **Overview**
+
+This guide provides comprehensive documentation for the pipeline execution scripts created for trash image segmentation using YOLOv8, YOLOv10, and YOLOv11.
+
+## 🚀 **Available Scripts**
+
+### **1. Individual YOLO Scripts**
+- `run_yolov8_pipeline.sh` - YOLOv8 pipeline execution
+- `run_yolov10_pipeline.sh` - YOLOv10 pipeline execution  
+- `run_yolov11_pipeline.sh` - YOLOv11 pipeline execution
+
+### **2. Master Script**
+- `run_all_pipelines.sh` - Unified interface for all YOLO versions
+
+## 📁 **Script Structure**
+
+```
+pmu-instance-sampah-fuzzy/
+├── run_yolov8_pipeline.sh      # YOLOv8 specific pipeline
+├── run_yolov10_pipeline.sh     # YOLOv10 specific pipeline
+├── run_yolov11_pipeline.sh     # YOLOv11 specific pipeline
+├── run_all_pipelines.sh        # Master script for all versions
+└── docs/
+    └── PIPELINE_SCRIPTS_GUIDE.md  # This documentation
+```
+
+## 🎯 **Features**
+
+### **✅ Comprehensive Scenarios**
+- **Training**: Train new models from scratch
+- **Existing Results**: Use pre-trained models without retraining
+- **Complete Pipeline**: Full training, analysis, inference, and RKNN conversion
+- **Safe Pipeline**: Skip problematic inference visualization
+- **ONNX Export**: Export models to ONNX format
+- **Analysis Only**: Run analysis on existing results
+- **Inference Only**: Run inference and visualization
+- **RKNN Only**: Convert models to RKNN format
+- **All Models**: Run all variants of a YOLO version
+- **Custom**: Custom configuration with editable parameters
+
+### **✅ Environment Management**
+- Automatic virtual environment detection and activation
+- Prerequisites checking
+- Colored output for better readability
+- Error handling and validation
+
+### **✅ Configuration Flexibility**
+- Easy parameter modification
+- Model version selection
+- Training hyperparameters
+- Dataset path configuration
+- Google Drive integration
+
+## 🛠️ **Usage Examples**
+
+### **Individual Scripts**
+
+#### **YOLOv8 Examples:**
+```bash
+# Train new YOLOv8 model
+./run_yolov8_pipeline.sh train_new
+
+# Use existing YOLOv8 results
+./run_yolov8_pipeline.sh use_existing
+
+# Complete YOLOv8 pipeline
+./run_yolov8_pipeline.sh complete_pipeline
+
+# Safe YOLOv8 pipeline (skip problematic inference)
+./run_yolov8_pipeline.sh safe_pipeline
+
+# Export ONNX from existing YOLOv8 model
+./run_yolov8_pipeline.sh onnx_export
+
+# Run analysis only on YOLOv8 results
+./run_yolov8_pipeline.sh analysis_only
+
+# Run inference only on YOLOv8 model
+./run_yolov8_pipeline.sh inference_only
+
+# Convert YOLOv8 to RKNN only
+./run_yolov8_pipeline.sh rknn_only
+
+# Run all YOLOv8 variants (v8n, v8s, v8m, v8l, v8x)
+./run_yolov8_pipeline.sh all_models
+
+# Custom YOLOv8 configuration
+./run_yolov8_pipeline.sh custom
+```
+
+#### **YOLOv10 Examples:**
+```bash
+# Train new YOLOv10 model
+./run_yolov10_pipeline.sh train_new
+
+# Use existing YOLOv10 results
+./run_yolov10_pipeline.sh use_existing
+
+# Complete YOLOv10 pipeline
+./run_yolov10_pipeline.sh complete_pipeline
+
+# Safe YOLOv10 pipeline
+./run_yolov10_pipeline.sh safe_pipeline
+
+# Export ONNX from existing YOLOv10 model
+./run_yolov10_pipeline.sh onnx_export
+
+# Run analysis only on YOLOv10 results
+./run_yolov10_pipeline.sh analysis_only
+
+# Run inference only on YOLOv10 model
+./run_yolov10_pipeline.sh inference_only
+
+# Convert YOLOv10 to RKNN only
+./run_yolov10_pipeline.sh rknn_only
+
+# Run all YOLOv10 variants (v10n, v10s, v10m, v10l, v10x)
+./run_yolov10_pipeline.sh all_models
+
+# Custom YOLOv10 configuration
+./run_yolov10_pipeline.sh custom
+```
+
+#### **YOLOv11 Examples:**
+```bash
+# Train new YOLOv11 model
+./run_yolov11_pipeline.sh train_new
+
+# Use existing YOLOv11 results
+./run_yolov11_pipeline.sh use_existing
+
+# Complete YOLOv11 pipeline
+./run_yolov11_pipeline.sh complete_pipeline
+
+# Safe YOLOv11 pipeline
+./run_yolov11_pipeline.sh safe_pipeline
+
+# Export ONNX from existing YOLOv11 model
+./run_yolov11_pipeline.sh onnx_export
+
+# Run analysis only on YOLOv11 results
+./run_yolov11_pipeline.sh analysis_only
+
+# Run inference only on YOLOv11 model
+./run_yolov11_pipeline.sh inference_only
+
+# Convert YOLOv11 to RKNN only
+./run_yolov11_pipeline.sh rknn_only
+
+# Run all YOLOv11 variants (v11n, v11s, v11m, v11l, v11x)
+./run_yolov11_pipeline.sh all_models
+
+# Custom YOLOv11 configuration
+./run_yolov11_pipeline.sh custom
+```
+
+### **Master Script Examples**
+
+#### **Single YOLO Version:**
+```bash
+# Train new YOLOv8 model
+./run_all_pipelines.sh v8 train_new
+
+# Use existing YOLOv10 results
+./run_all_pipelines.sh v10 use_existing
+
+# Complete YOLOv11 pipeline
+./run_all_pipelines.sh v11 complete_pipeline
+
+# Safe YOLOv8 pipeline
+./run_all_pipelines.sh v8 safe_pipeline
+```
+
+#### **All YOLO Versions:**
+```bash
+# Train new models for all YOLO versions
+./run_all_pipelines.sh all train_new
+
+# Use existing results for all YOLO versions
+./run_all_pipelines.sh all use_existing
+
+# Complete pipeline for all YOLO versions
+./run_all_pipelines.sh all complete_pipeline
+
+# Safe pipeline for all YOLO versions
+./run_all_pipelines.sh all safe_pipeline
+```
+
+## ⚙️ **Configuration**
+
+### **Default Parameters (Edit in Scripts):**
+
+#### **YOLOv8 Configuration:**
+```bash
+MODEL_VERSION="v8n"  # Change to v8s, v8m, v8l, v8x
+EPOCHS=50
+BATCH_SIZE=16
+IMAGE_SIZE=640
+DATASET_PATH="datasets"
+SAVE_TO_DRIVE=true
+```
+
+#### **YOLOv10 Configuration:**
+```bash
+MODEL_VERSION="v10n"  # Change to v10s, v10m, v10l, v10x
+EPOCHS=50
+BATCH_SIZE=16
+IMAGE_SIZE=640
+DATASET_PATH="datasets"
+SAVE_TO_DRIVE=true
+```
+
+#### **YOLOv11 Configuration:**
+```bash
+MODEL_VERSION="v11n"  # Change to v11s, v11m, v11l, v11x
+EPOCHS=50
+BATCH_SIZE=16
+IMAGE_SIZE=640
+DATASET_PATH="datasets"
+SAVE_TO_DRIVE=true
+```
+
+### **Custom Configuration:**
+Each script has a `run_custom()` function where you can modify parameters:
+
+```bash
+# EDIT THESE PARAMETERS AS NEEDED
+CUSTOM_EPOCHS=100
+CUSTOM_BATCH_SIZE=8
+CUSTOM_IMAGE_SIZE=512
+```
+
+## 🔧 **Scenarios Explained**
+
+### **1. train_new**
+- **Purpose**: Train a new model from scratch
+- **Actions**: Downloads dataset, trains model, saves results
+- **Use Case**: First-time training or when you want fresh training
+
+### **2. use_existing**
+- **Purpose**: Use existing training results without retraining
+- **Actions**: Finds existing model, runs analysis and inference
+- **Use Case**: When you have trained models and want to analyze/infer
+
+### **3. complete_pipeline**
+- **Purpose**: Full pipeline execution
+- **Actions**: Train (if needed), analyze, infer, convert to RKNN
+- **Use Case**: Complete workflow from training to deployment
+
+### **4. safe_pipeline**
+- **Purpose**: Safe execution skipping problematic steps
+- **Actions**: Train (if needed), analyze, skip inference, convert to RKNN
+- **Use Case**: When inference visualization causes errors
+
+### **5. onnx_export**
+- **Purpose**: Export existing PyTorch model to ONNX
+- **Actions**: Loads existing model, exports to ONNX format
+- **Use Case**: Model deployment or cross-platform compatibility
+
+### **6. analysis_only**
+- **Purpose**: Run analysis on existing training results
+- **Actions**: Loads existing model, generates metrics and plots
+- **Use Case**: Performance analysis and evaluation
+
+### **7. inference_only**
+- **Purpose**: Run inference and visualization
+- **Actions**: Loads existing model, runs inference on test images
+- **Use Case**: Model testing and visualization
+
+### **8. rknn_only**
+- **Purpose**: Convert model to RKNN format
+- **Actions**: Loads existing model, converts to RKNN
+- **Use Case**: Deployment on RKNN-compatible devices
+
+### **9. all_models**
+- **Purpose**: Run all variants of a YOLO version
+- **Actions**: Executes pipeline for all model sizes (n, s, m, l, x)
+- **Use Case**: Comprehensive model comparison
+
+### **10. custom**
+- **Purpose**: Custom configuration with modified parameters
+- **Actions**: Uses custom parameters defined in script
+- **Use Case**: Experimentation with different hyperparameters
+
+## 🎨 **Output Features**
+
+### **Colored Output:**
+- 🔵 **Blue**: Information messages
+- 🟢 **Green**: Success messages
+- 🟡 **Yellow**: Warning messages
+- 🔴 **Red**: Error messages
+- 🟣 **Purple**: Headers and section dividers
+
+### **Progress Tracking:**
+- Virtual environment status
+- Prerequisites checking
+- Pipeline step execution
+- Error handling and recovery
+
+## 🔍 **Troubleshooting**
+
+### **Common Issues:**
+
+#### **1. Permission Denied:**
+```bash
+# Make scripts executable
+chmod +x run_yolov8_pipeline.sh
+chmod +x run_yolov10_pipeline.sh
+chmod +x run_yolov11_pipeline.sh
+chmod +x run_all_pipelines.sh
+```
+
+#### **2. Virtual Environment Not Found:**
+```bash
+# Scripts automatically activate .venv
+# If manual activation needed:
+source .venv/bin/activate
+```
+
+#### **3. Missing Dependencies:**
+```bash
+# Install required packages
+pip install -r requirements.txt
+```
+
+#### **4. Dataset Not Found:**
+```bash
+# Scripts automatically download from Roboflow
+# Or place dataset.zip in root directory
+```
+
+### **Debug Mode:**
+Add `set -x` at the beginning of any script for verbose output:
+
+```bash
+#!/bin/bash
+set -x  # Enable debug mode
+# ... rest of script
+```
+
+## 📊 **Performance Tips**
+
+### **1. Resource Management:**
+- Adjust `BATCH_SIZE` based on available GPU memory
+- Modify `IMAGE_SIZE` for speed vs accuracy trade-off
+- Use `EPOCHS` based on dataset size and complexity
+
+### **2. Pipeline Optimization:**
+- Use `use_existing` when you have trained models
+- Use `safe_pipeline` if inference causes issues
+- Use `analysis_only` for quick performance evaluation
+
+### **3. Model Selection:**
+- **v8n/v10n/v11n**: Fastest, good for prototyping
+- **v8s/v10s/v11s**: Balanced speed and accuracy
+- **v8m/v10m/v11m**: Better accuracy, moderate speed
+- **v8l/v10l/v11l**: High accuracy, slower
+- **v8x/v10x/v11x**: Best accuracy, slowest
+
+## 🚀 **Advanced Usage**
+
+### **1. Batch Processing:**
+```bash
+# Run multiple scenarios
+for scenario in train_new use_existing complete_pipeline; do
+    ./run_yolov8_pipeline.sh $scenario
+done
+```
+
+### **2. Model Comparison:**
+```bash
+# Compare all YOLO versions
+for version in v8 v10 v11; do
+    ./run_all_pipelines.sh $version complete_pipeline
+done
+```
+
+### **3. Custom Scripts:**
+Create your own scripts based on the template:
+
+```bash
+#!/bin/bash
+# Copy any pipeline script and modify parameters
+cp run_yolov8_pipeline.sh my_custom_pipeline.sh
+# Edit my_custom_pipeline.sh with your parameters
+```
+
+## 📈 **Expected Outputs**
+
+### **Training Results:**
+- `results/runs/segment_train_v8n/` - Training outputs
+- `results/runs/segment_train_v10n/` - Training outputs
+- `results/runs/segment_train_v11n/` - Training outputs
+
+### **Analysis Results:**
+- `results/analysis/` - Performance metrics and plots
+- `results/tables/` - Performance comparison tables
+
+### **Inference Results:**
+- `results/inference/` - Inference visualizations
+- `compressed/` - Zipped inference results
+
+### **Model Exports:**
+- `results/onnx_models/` - ONNX model files
+- `results/rknn_models/` - RKNN model files
+- `compressed/` - Zipped model files
+
+## 🎉 **Benefits**
+
+### **1. Automation:**
+- ✅ Automated pipeline execution
+- ✅ Environment management
+- ✅ Error handling and recovery
+- ✅ Progress tracking
+
+### **2. Flexibility:**
+- ✅ Multiple YOLO versions
+- ✅ Various execution scenarios
+- ✅ Customizable parameters
+- ✅ Modular design
+
+### **3. User-Friendly:**
+- ✅ Colored output
+- ✅ Clear documentation
+- ✅ Help system
+- ✅ Validation and error messages
+
+### **4. Experimentation:**
+- ✅ Easy parameter modification
+- ✅ Multiple model variants
+- ✅ Safe execution options
+- ✅ Comprehensive scenarios
+
+## 🔗 **Related Documentation**
+
+- [README.md](../README.md) - Main project documentation
+- [ONNX_RKNN_TROUBLESHOOTING.md](ONNX_RKNN_TROUBLESHOOTING.md) - ONNX/RKNN issues
+- [PIPELINE_DIFFERENCES_GUIDE.md](PIPELINE_DIFFERENCES_GUIDE.md) - Pipeline comparisons
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Testing procedures
+
+## 🎯 **Quick Start**
+
+1. **Make scripts executable:**
+   ```bash
+   chmod +x run_*.sh
+   ```
+
+2. **Run help to see options:**
+   ```bash
+   ./run_all_pipelines.sh help
+   ```
+
+3. **Start with a simple scenario:**
+   ```bash
+   ./run_yolov8_pipeline.sh use_existing
+   ```
+
+4. **Experiment with different configurations:**
+   ```bash
+   ./run_all_pipelines.sh v8 complete_pipeline
+   ```
+
+The pipeline scripts provide a comprehensive, user-friendly interface for running trash image segmentation experiments with YOLOv8, YOLOv10, and YOLOv11! 🚀 
