@@ -262,6 +262,10 @@ data/
 *.rar
 *.7z
 
+# Compressed files (large and generated)
+# Contains zip files of datasets, models, weights, and inference results
+compressed/
+
 # Results files
 results/
 
