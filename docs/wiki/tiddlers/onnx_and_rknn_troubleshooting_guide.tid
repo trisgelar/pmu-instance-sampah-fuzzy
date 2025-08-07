@@ -1,5 +1,5 @@
 title: ONNX and RKNN Troubleshooting Guide
-type: text/vnd.tiddlywiki
+type: text/markdown
 tags: pipeline yolo training inference onnx rknn troubleshooting installation guide git cuda python docs documentation
 created: 20250807170027
 modified: 20250807170027

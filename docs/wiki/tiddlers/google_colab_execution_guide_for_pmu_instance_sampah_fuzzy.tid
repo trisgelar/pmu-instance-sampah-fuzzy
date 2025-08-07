@@ -1,5 +1,5 @@
 title: Google Colab Execution Guide for PMU Instance Sampah Fuzzy
-type: text/vnd.tiddlywiki
+type: text/markdown
 tags: yolo training inference onnx rknn troubleshooting deployment configuration documentation guide reference git cuda python structure docs documentation
 created: 20250807170027
 modified: 20250807170027

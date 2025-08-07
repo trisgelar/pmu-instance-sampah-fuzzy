@@ -1,5 +1,5 @@
 title: Deployment Guide
-type: text/vnd.tiddlywiki
+type: text/markdown
 tags: pipeline training inference onnx rknn troubleshooting installation deployment testing configuration documentation guide git cuda python unit structure docs documentation
 created: 20250807170027
 modified: 20250807170027

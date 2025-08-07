@@ -1,5 +1,5 @@
 title: Git Push Summary - Successful Deployment
-type: text/vnd.tiddlywiki
+type: text/markdown
 tags: pipeline yolo training inference onnx rknn troubleshooting deployment testing documentation guide reference git structure docs documentation
 created: 20250807170027
 modified: 20250807170027

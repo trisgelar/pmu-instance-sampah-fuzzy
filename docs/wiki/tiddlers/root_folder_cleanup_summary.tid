@@ -1,5 +1,5 @@
 title: Root Folder Cleanup Summary
-type: text/vnd.tiddlywiki
+type: text/markdown
 tags: inference onnx rknn testing configuration documentation reference cuda python structure docs documentation
 created: 20250807170027
 modified: 20250807170027

@@ -1,5 +1,5 @@
 title: API Reference
-type: text/vnd.tiddlywiki
+type: text/markdown
 tags: yolo training inference onnx rknn deployment testing configuration documentation guide reference git python unit docs documentation
 created: 20250807170027
 modified: 20250807170027

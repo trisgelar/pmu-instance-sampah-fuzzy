@@ -25,7 +25,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('waste_detection_system.log')
+        logging.FileHandler('logs/waste_detection_system.log')
     ]
 )
 logger = logging.getLogger(__name__)

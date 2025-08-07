@@ -1,0 +1,39 @@
+title: Navigation
+type: text/markdown
+tags: navigation documentation
+
+# PMU Instance Sampah Fuzzy - Documentation Navigation
+
+## 📋 Available Documents
+
+### Pipeline Documentation
+- [[Pipeline Scripts Guide]]
+- [[Pipeline Differences Guide]]
+- [[Pipeline Quick Reference]]
+
+### Configuration & Setup
+- [[Deployment Guide]]
+
+### Troubleshooting
+- [[ONNX/RKNN Troubleshooting Guide]]
+
+### Advanced Topics
+- [[Comprehensive Testing Guide]]
+- [[API Reference]]
+
+## 🚀 Quick Start
+
+1. Click on any document title above to open it
+2. Use the search box to find specific content
+3. Use the sidebar to navigate between documents
+
+## 📚 How to Use
+
+- **Click titles** to open documents
+- **Search** using the search box
+- **Navigate** using the sidebar
+- **Edit** documents by clicking the edit button
+
+---
+
+Welcome to your documentation wiki! 🎉

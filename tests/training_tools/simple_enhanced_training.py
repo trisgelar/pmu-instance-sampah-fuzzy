@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('simple_enhanced_training.log'),
+        logging.FileHandler('logs/simple_enhanced_training.log'),
         logging.StreamHandler()
     ]
 )

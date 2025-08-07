@@ -97,7 +97,7 @@ class LoggingConfig:
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     file_logging: bool = True
     console_logging: bool = True
-    log_file: str = "waste_detection_system.log"
+    log_file: str = "logs/waste_detection_system.log"
     max_log_size_mb: int = 10
     backup_count: int = 5
 

@@ -1,0 +1,564 @@
+title: TiddlyWiki Theme Development Guide
+type: text/markdown
+tags: theme development tiddlywiki documentation tutorial
+created: 20250807220000
+modified: 20250807220000
+
+# TiddlyWiki Theme Development Guide
+
+## 🎨 Complete Guide to Creating Themes in TiddlyWiki
+
+This guide walks you through creating a custom theme in TiddlyWiki from start to finish, using our Monokai Pro theme as a practical example.
+
+## 📋 Table of Contents
+
+1. [Understanding TiddlyWiki Themes](#understanding-tiddlywiki-themes)
+2. [Planning Your Theme](#planning-your-theme)
+3. [Creating the Theme Structure](#creating-theme-structure)
+4. [Writing CSS for Your Theme](#writing-css)
+5. [Creating a Theme Switcher](#creating-theme-switcher)
+6. [Testing and Debugging](#testing-debugging)
+7. [Deployment and Configuration](#deployment-configuration)
+8. [Monokai Pro Example](#monokai-pro-example)
+
+---
+
+## 🎯 Understanding TiddlyWiki Themes
+
+### What is a TiddlyWiki Theme?
+
+A TiddlyWiki theme is a **tiddler** (document) that contains CSS styling to change the appearance of your wiki. Themes can:
+
+- Change colors, fonts, and layouts
+- Provide multiple variants (dark/light)
+- Include interactive elements
+- Be switched dynamically
+
+### Theme Components
+
+1. **Theme Tiddler** - Contains CSS styles
+2. **Theme Switcher** - Interactive interface to change themes
+3. **Configuration** - Setup in `tiddlywiki.info`
+
+---
+
+## 📝 Planning Your Theme
+
+### Step 1: Define Your Color Palette
+
+Before writing code, plan your colors:
+
+```css
+/* Example: Monokai Pro Dark Palette */
+--primary-bg: #2d2a2e;      /* Dark background */
+--primary-text: #fce566;     /* Yellow text */
+--accent-color: #a6e22e;     /* Green headings */
+--code-color: #fd971f;       /* Orange code */
+--link-color: #a8ff60;       /* Light green links */
+```
+
+### Step 2: Identify Key Elements
+
+Map out what needs styling:
+
+- **Body** - Main background and text
+- **Tiddlers** - Individual document containers
+- **Headings** - H1, H2, H3 elements
+- **Code blocks** - Syntax highlighting
+- **Links** - Navigation and external links
+- **Sidebar** - Navigation panel
+- **Tags** - Category labels
+
+---
+
+## 🏗️ Creating the Theme Structure
+
+### Step 1: Create Theme Tiddler
+
+Create a new file: `docs/wiki/tiddlers/your_theme.tid`
+
+```tiddlywiki
+title: $:/themes/yourname/your-theme
+type: text/vnd.tiddlywiki
+tags: $:/tags/Theme
+description: Your theme description
+author: Your Name
+version: 1.0.0
+license: MIT
+
+!! Your Theme Name
+
+Description of your theme...
+
+!! CSS Styles
+
+```css
+/* Your CSS goes here */
+```
+```
+
+### Step 2: Theme Naming Convention
+
+Use this format: `$:/themes/yourname/theme-name`
+
+Examples:
+- `$:/themes/pmu/monokai-pro`
+- `$:/themes/john/dark-theme`
+- `$:/themes/company/corporate`
+
+---
+
+## 🎨 Writing CSS for Your Theme
+
+### Step 1: CSS Variables (Custom Properties)
+
+Define your color palette as CSS variables:
+
+```css
+/* Theme Variables */
+.your-theme-dark {
+    --bg-primary: #2d2a2e;
+    --text-primary: #fce566;
+    --accent-primary: #a6e22e;
+    --code-primary: #fd971f;
+    --border-primary: #75715e;
+}
+```
+
+### Step 2: Apply to Body
+
+Always style the body element:
+
+```css
+/* Apply theme to body */
+body.your-theme-dark {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+```
+
+### Step 3: Style Key Elements
+
+```css
+/* Tiddler styling */
+.your-theme-dark .tc-tiddler-frame {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+}
+
+/* Heading styling */
+.your-theme-dark h1, .your-theme-dark h2, .your-theme-dark h3 {
+    color: var(--accent-primary);
+    border-bottom: 2px solid var(--border-primary);
+}
+
+/* Code styling */
+.your-theme-dark code {
+    background-color: var(--code-bg);
+    color: var(--code-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 3px;
+    padding: 2px 4px;
+}
+```
+
+### Step 4: Content Areas
+
+Style main content containers:
+
+```css
+/* Story river (main content) */
+.your-theme-dark .tc-story-river {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Tiddler body */
+.your-theme-dark .tc-tiddler-body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+```
+
+---
+
+## 🔄 Creating a Theme Switcher
+
+### Step 1: Create Theme Switcher Tiddler
+
+Create: `docs/wiki/tiddlers/theme_switcher.tid`
+
+```tiddlywiki
+title: Theme Switcher
+type: text/vnd.tiddlywiki
+tags: theme switcher
+
+!! Theme Switcher
+
+Click buttons to switch themes:
+
+<div style="text-align: center; padding: 20px;">
+    <button onclick="switchToDark()">🌙 Dark Theme</button>
+    <button onclick="switchToLight()">☀️ Light Theme</button>
+</div>
+
+<script>
+// Theme switching functions
+window.switchToDark = function() {
+    document.body.classList.remove('your-theme-light');
+    document.body.classList.add('your-theme-dark');
+    localStorage.setItem('current-theme', 'dark');
+};
+
+window.switchToLight = function() {
+    document.body.classList.remove('your-theme-dark');
+    document.body.classList.add('your-theme-light');
+    localStorage.setItem('current-theme', 'light');
+};
+
+// Auto-load saved theme
+window.addEventListener('load', function() {
+    const savedTheme = localStorage.getItem('current-theme') || 'dark';
+    if (savedTheme === 'light') {
+        window.switchToLight();
+    } else {
+        window.switchToDark();
+    }
+});
+</script>
+```
+
+### Step 2: JavaScript Best Practices
+
+```javascript
+// Always remove old classes before adding new ones
+document.body.classList.remove('old-theme');
+document.body.classList.add('new-theme');
+
+// Save user preference
+localStorage.setItem('theme-preference', 'theme-name');
+
+// Load saved preference
+const savedTheme = localStorage.getItem('theme-preference');
+```
+
+---
+
+## 🧪 Testing and Debugging
+
+### Step 1: Browser Developer Tools
+
+1. **Open Developer Tools** (F12)
+2. **Inspect Elements** to see applied classes
+3. **Check Console** for JavaScript errors
+4. **Test CSS** in the Elements tab
+
+### Step 2: Common Issues
+
+```css
+/* Problem: Theme not applying */
+/* Solution: Check class names match */
+body.your-theme-dark { /* ✓ Correct */
+body.your-theme-dark { /* ✗ Wrong - missing closing brace */
+
+/* Problem: Colors not changing */
+/* Solution: Use !important for overrides */
+.your-theme-dark .tc-tiddler-frame {
+    background-color: var(--bg-primary) !important;
+}
+```
+
+### Step 3: Debugging Checklist
+
+- [ ] Theme tiddler is loaded in `tiddlywiki.info`
+- [ ] CSS classes match JavaScript functions
+- [ ] CSS variables are defined
+- [ ] No JavaScript errors in console
+- [ ] Theme switcher buttons work
+- [ ] Local storage saves preferences
+
+---
+
+## 🚀 Deployment and Configuration
+
+### Step 1: Update tiddlywiki.info
+
+Add your theme to the configuration:
+
+```json
+{
+    "tiddlers": [
+        {
+            "file": "tiddlers/your_theme.tid",
+            "fields": {
+                "title": "$:/themes/yourname/your-theme",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "$:/tags/Theme"
+            }
+        },
+        {
+            "file": "tiddlers/theme_switcher.tid",
+            "fields": {
+                "title": "Theme Switcher",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "theme switcher"
+            }
+        }
+    ]
+}
+```
+
+### Step 2: Restart Server
+
+```bash
+# Stop current server
+pkill -f "tiddlywiki.*--listen"
+
+# Start with new theme
+tiddlywiki docs/wiki --listen
+```
+
+---
+
+## 🎨 Monokai Pro Example
+
+### Complete Theme Implementation
+
+Here's our complete Monokai Pro theme as a reference:
+
+#### 1. Theme Tiddler (`monokai_pro_theme.tid`)
+
+```tiddlywiki
+title: $:/themes/pmu/monokai-pro
+type: text/vnd.tiddlywiki
+tags: $:/tags/Theme
+description: Monokai Pro color scheme
+author: PMU Team
+version: 1.0.0
+
+!! Monokai Pro Theme
+
+```css
+/* Dark Theme Variables */
+.tc-theme-pmu-monokai-dark {
+    --monokai-bg: #2d2a2e;
+    --monokai-fg: #fce566;
+    --monokai-class: #a6e22e;
+    --monokai-function: #fd971f;
+    --monokai-string: #a8ff60;
+    --monokai-border: #75715e;
+}
+
+/* Apply to body */
+body.tc-theme-pmu-monokai-dark {
+    background-color: var(--monokai-bg);
+    color: var(--monokai-fg);
+}
+
+/* Content areas */
+.tc-theme-pmu-monokai-dark .tc-story-river {
+    background-color: var(--monokai-bg);
+    color: var(--monokai-fg);
+}
+
+.tc-theme-pmu-monokai-dark .tc-tiddler-frame {
+    background-color: var(--monokai-bg);
+    color: var(--monokai-fg);
+    border: 1px solid var(--monokai-border);
+}
+
+/* Headings */
+.tc-theme-pmu-monokai-dark h1, 
+.tc-theme-pmu-monokai-dark h2, 
+.tc-theme-pmu-monokai-dark h3 {
+    color: var(--monokai-class);
+    border-bottom: 2px solid var(--monokai-border);
+}
+
+/* Code blocks */
+.tc-theme-pmu-monokai-dark code {
+    background-color: var(--monokai-selection);
+    color: var(--monokai-function);
+    border: 1px solid var(--monokai-border);
+    border-radius: 3px;
+    padding: 2px 4px;
+}
+```
+
+#### 2. Theme Switcher (`theme_switcher.tid`)
+
+```tiddlywiki
+title: Theme Switcher
+type: text/vnd.tiddlywiki
+tags: theme switcher monokai
+
+!! Monokai Pro Theme Switcher
+
+<div style="text-align: center; padding: 20px;">
+    <button onclick="switchToMonokaiDark()">🌙 Dark</button>
+    <button onclick="switchToMonokaiLight()">☀️ Light</button>
+</div>
+
+<script>
+window.switchToMonokaiDark = function() {
+    document.body.classList.remove('tc-theme-pmu-monokai-light');
+    document.body.classList.add('tc-theme-pmu-monokai-dark');
+    localStorage.setItem('pmu-theme', 'dark');
+};
+
+window.switchToMonokaiLight = function() {
+    document.body.classList.remove('tc-theme-pmu-monokai-dark');
+    document.body.classList.add('tc-theme-pmu-monokai-light');
+    localStorage.setItem('pmu-theme', 'light');
+};
+
+// Auto-load saved theme
+window.addEventListener('load', function() {
+    const savedTheme = localStorage.getItem('pmu-theme') || 'dark';
+    if (savedTheme === 'light') {
+        window.switchToMonokaiLight();
+    } else {
+        window.switchToMonokaiDark();
+    }
+});
+</script>
+```
+
+#### 3. Configuration (`tiddlywiki.info`)
+
+```json
+{
+    "tiddlers": [
+        {
+            "file": "tiddlers/monokai_pro_theme.tid",
+            "fields": {
+                "title": "$:/themes/pmu/monokai-pro",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "$:/tags/Theme"
+            }
+        },
+        {
+            "file": "tiddlers/theme_switcher.tid",
+            "fields": {
+                "title": "Theme Switcher",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "theme switcher monokai"
+            }
+        }
+    ]
+}
+```
+
+---
+
+## 📚 Best Practices
+
+### 1. Naming Conventions
+
+- **Theme tiddlers**: `$:/themes/yourname/theme-name`
+- **CSS classes**: `tc-theme-yourname-theme-variant`
+- **Files**: `your_theme.tid`, `theme_switcher.tid`
+
+### 2. CSS Organization
+
+```css
+/* 1. Variables first */
+.your-theme {
+    --color-primary: #value;
+}
+
+/* 2. Body styling */
+body.your-theme {
+    /* body styles */
+}
+
+/* 3. Content areas */
+.your-theme .tc-story-river {
+    /* content styles */
+}
+
+/* 4. Specific elements */
+.your-theme .tc-tiddler-frame {
+    /* tiddler styles */
+}
+```
+
+### 3. JavaScript Patterns
+
+```javascript
+// Always use classList for better control
+document.body.classList.remove('old-theme');
+document.body.classList.add('new-theme');
+
+// Save preferences
+localStorage.setItem('theme-preference', 'theme-name');
+
+// Load on page load
+window.addEventListener('load', function() {
+    // Load saved theme
+});
+```
+
+### 4. Testing Strategy
+
+1. **Test in multiple browsers**
+2. **Check mobile responsiveness**
+3. **Verify accessibility** (color contrast)
+4. **Test with different content types**
+5. **Validate CSS syntax**
+
+---
+
+## 🎯 Quick Start Template
+
+Use this template to create your own theme:
+
+```tiddlywiki
+title: $:/themes/yourname/your-theme
+type: text/vnd.tiddlywiki
+tags: $:/tags/Theme
+description: Your theme description
+author: Your Name
+version: 1.0.0
+
+!! Your Theme Name
+
+```css
+/* Your theme CSS here */
+.your-theme {
+    --bg-primary: #your-color;
+    --text-primary: #your-color;
+}
+
+body.your-theme {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+```
+```
+
+---
+
+## 📖 Additional Resources
+
+- [TiddlyWiki Official Documentation](https://tiddlywiki.com/)
+- [CSS Custom Properties Guide](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+- [Color Palette Generators](https://coolors.co/)
+- [CSS Grid and Flexbox](https://css-tricks.com/snippets/css/complete-guide-grid/)
+
+---
+
+## 🏆 Summary
+
+Creating themes in TiddlyWiki involves:
+
+1. **Planning** your color palette and design
+2. **Creating** theme tiddler with CSS
+3. **Building** theme switcher with JavaScript
+4. **Configuring** in `tiddlywiki.info`
+5. **Testing** and debugging
+6. **Deploying** and maintaining
+
+The Monokai Pro theme demonstrates all these steps in practice, providing a beautiful, functional theme that enhances the documentation experience.
+
+Remember: **Good themes focus on readability and usability first, aesthetics second!** 🎨
