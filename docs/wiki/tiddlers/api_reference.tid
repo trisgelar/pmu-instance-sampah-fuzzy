@@ -1,0 +1,1159 @@
+title: API Reference
+type: text/vnd.tiddlywiki
+tags: yolo training inference onnx rknn deployment testing configuration documentation guide reference git python unit docs documentation
+created: 20250807170027
+modified: 20250807170027
+source: docs/API_REFERENCE.md
+
+# API Reference
+
+Complete API documentation for the Waste Detection System with Fuzzy Classification.
+
+## Table of Contents
+
+- [Main System](#main-system)
+- [Configuration Management](#configuration-management)
+- [Dataset Management](#dataset-management)
+- [Model Processing](#model-processing)
+- [Fuzzy Classification](#fuzzy-classification)
+- [Inference & Visualization](#inference--visualization)
+- [Metrics Analysis](#metrics-analysis)
+- [RKNN Conversion](#rknn-conversion)
+- [Drive Management](#drive-management)
+- [Exceptions](#exceptions)
+- [Testing](#testing)
+- [Utilities](#utilities)
+
+## Main System
+
+### `WasteDetectionSystemColab`
+
+The main orchestrator class that coordinates all system components.
+
+#### Constructor
+
+```python
+WasteDetectionSystemColab(
+    config_path: str = None,
+    environment: str = None
+) -> WasteDetectionSystemColab
+```
+
+**Parameters:**
+- `config_path` (str, optional): Path to configuration file
+- `environment` (str, optional): Environment type ("development", "production", "testing", "colab")
+
+**Returns:**
+- `WasteDetectionSystemColab`: Initialized system instance
+
+**Example:**
+```python
+# Initialize with default configuration
+system = WasteDetectionSystemColab()
+
+# Initialize with custom config
+system = WasteDetectionSystemColab("custom_config.yaml")
+
+# Initialize for production
+system = WasteDetectionSystemColab(environment="production")
+```
+
+#### Methods
+
+##### `train_and_export_model()`
+
+```python
+train_and_export_model(
+    model_version: str,
+    epochs: int = None,
+    batch_size: int = None,
+    img_size: tuple = None
+) -> str
+```
+
+Trains a YOLO model and exports it to ONNX format.
+
+**Parameters:**
+- `model_version` (str): YOLO model version ("v8n", "v10n", "v11n")
+- `epochs` (int, optional): Number of training epochs
+- `batch_size` (int, optional): Training batch size
+- `img_size` (tuple, optional): Input image size (width, height)
+
+**Returns:**
+- `str`: Path to the trained model directory
+
+**Example:**
+```python
+result = system.train_and_export_model("v8n", epochs=50, batch_size=16)
+print(f"Model saved to: {result}")
+```
+
+##### `run_inference_and_visualization()`
+
+```python
+run_inference_and_visualization(
+    model_path: str,
+    model_version: str,
+    conf_threshold: float = None
+) -> dict
+```
+
+Runs inference on sample images and generates visualizations.
+
+**Parameters:**
+- `model_path` (str): Path to trained model
+- `model_version` (str): YOLO model version
+- `conf_threshold` (float, optional): Confidence threshold
+
+**Returns:**
+- `dict`: Inference results with visualizations
+
+**Example:**
+```python
+results = system.run_inference_and_visualization("runs/train/exp1", "v8n")
+```
+
+##### `analyze_training_run()`
+
+```python
+analyze_training_run(
+    model_path: str,
+    model_version: str
+) -> dict
+```
+
+Analyzes training metrics and generates performance plots.
+
+**Parameters:**
+- `model_path` (str): Path to trained model
+- `model_version` (str): YOLO model version
+
+**Returns:**
+- `dict`: Training metrics and analysis
+
+**Example:**
+```python
+metrics = system.analyze_training_run("runs/train/exp1", "v8n")
+```
+
+##### `get_system_status()`
+
+```python
+get_system_status() -> dict
+```
+
+Returns the current system status and configuration.
+
+**Returns:**
+- `dict`: System status information
+
+**Example:**
+```python
+status = system.get_system_status()
+print(f"Configuration: {status['configuration']}")
+```
+
+##### `update_configuration()`
+
+```python
+update_configuration(
+    section: str,
+    key: str,
+    value: any
+) -> bool
+```
+
+Updates configuration parameters at runtime.
+
+**Parameters:**
+- `section` (str): Configuration section ("model", "dataset", "fuzzy", etc.)
+- `key` (str): Parameter key
+- `value` (any): New parameter value
+
+**Returns:**
+- `bool`: True if update successful, False otherwise
+
+**Example:**
+```python
+success = system.update_configuration("model", "default_epochs", 100)
+```
+
+## Configuration Management
+
+### `ConfigManager`
+
+Manages system configuration loading, validation, and updates.
+
+#### Constructor
+
+```python
+ConfigManager(
+    config_path: str = None,
+    environment: str = None
+) -> ConfigManager
+```
+
+**Parameters:**
+- `config_path` (str, optional): Path to configuration file
+- `environment` (str, optional): Environment type
+
+**Returns:**
+- `ConfigManager`: Configuration manager instance
+
+#### Methods
+
+##### `get_model_config()`
+
+```python
+get_model_config() -> ModelConfig
+```
+
+Returns model configuration parameters.
+
+**Returns:**
+- `ModelConfig`: Model configuration dataclass
+
+##### `get_dataset_config()`
+
+```python
+get_dataset_config() -> DatasetConfig
+```
+
+Returns dataset configuration parameters.
+
+**Returns:**
+- `DatasetConfig`: Dataset configuration dataclass
+
+##### `get_fuzzy_config()`
+
+```python
+get_fuzzy_config() -> FuzzyConfig
+```
+
+Returns fuzzy logic configuration parameters.
+
+**Returns:**
+- `FuzzyConfig`: Fuzzy configuration dataclass
+
+##### `get_logging_config()`
+
+```python
+get_logging_config() -> LoggingConfig
+```
+
+Returns logging configuration parameters.
+
+**Returns:**
+- `LoggingConfig`: Logging configuration dataclass
+
+##### `get_system_config()`
+
+```python
+get_system_config() -> SystemConfig
+```
+
+Returns system configuration parameters.
+
+**Returns:**
+- `SystemConfig`: System configuration dataclass
+
+##### `update_config()`
+
+```python
+update_config(
+    section: str,
+    key: str,
+    value: any
+) -> bool
+```
+
+Updates a configuration parameter.
+
+**Parameters:**
+- `section` (str): Configuration section
+- `key` (str): Parameter key
+- `value` (any): New value
+
+**Returns:**
+- `bool`: Success status
+
+##### `get_config_summary()`
+
+```python
+get_config_summary() -> dict
+```
+
+Returns a summary of all configuration parameters.
+
+**Returns:**
+- `dict`: Configuration summary
+
+### Configuration Dataclasses
+
+#### `ModelConfig`
+
+```python
+@dataclass
+class ModelConfig:
+    supported_versions: List[str]
+    default_epochs: int
+    default_batch_size: int
+    default_img_size: Tuple[int, int]
+    default_conf_threshold: float
+    min_epochs: int
+    max_epochs: int
+    min_batch_size: int
+    max_batch_size: int
+    supported_img_sizes: List[Tuple[int, int]]
+```
+
+#### `DatasetConfig`
+
+```python
+@dataclass
+class DatasetConfig:
+    roboflow_project: str
+    roboflow_version: str
+    default_dataset_dir: str
+    default_model_dir: str
+```
+
+#### `FuzzyConfig`
+
+```python
+@dataclass
+class FuzzyConfig:
+    area_percent_ranges: Dict[str, List[float]]
+    classification_score_ranges: Dict[str, List[float]]
+    sedikit_threshold: float
+    sedang_threshold: float
+    fallback_sedikit_threshold: float
+    fallback_sedang_threshold: float
+```
+
+#### `LoggingConfig`
+
+```python
+@dataclass
+class LoggingConfig:
+    level: str
+    file_logging: bool
+    console_logging: bool
+    log_file: str
+```
+
+#### `SystemConfig`
+
+```python
+@dataclass
+class SystemConfig:
+    environment: Environment
+    num_workers: int
+    pin_memory: bool
+    mixed_precision: bool
+    request_timeout: int
+```
+
+## Dataset Management
+
+### `DatasetManager`
+
+Manages dataset operations including download, preparation, and validation.
+
+#### Constructor
+
+```python
+DatasetManager(
+    roboflow_project: str,
+    roboflow_version: str,
+    dataset_dir: str = "datasets"
+) -> DatasetManager
+```
+
+**Parameters:**
+- `roboflow_project` (str): Roboflow project name
+- `roboflow_version` (str): Dataset version
+- `dataset_dir` (str): Local dataset directory
+
+#### Methods
+
+##### `download_dataset()`
+
+```python
+download_dataset() -> str
+```
+
+Downloads dataset from Roboflow.
+
+**Returns:**
+- `str`: Path to downloaded dataset
+
+##### `prepare_dataset()`
+
+```python
+prepare_dataset() -> bool
+```
+
+Prepares dataset for training.
+
+**Returns:**
+- `bool`: Success status
+
+##### `validate_dataset()`
+
+```python
+validate_dataset() -> bool
+```
+
+Validates dataset integrity.
+
+**Returns:**
+- `bool`: Validation status
+
+## Model Processing
+
+### `ModelProcessor`
+
+Handles YOLO model training and export operations.
+
+#### Constructor
+
+```python
+ModelProcessor(
+    model_version: str,
+    dataset_path: str,
+    model_dir: str = "runs"
+) -> ModelProcessor
+```
+
+**Parameters:**
+- `model_version` (str): YOLO model version
+- `dataset_path` (str): Path to dataset
+- `model_dir` (str): Output directory for models
+
+#### Methods
+
+##### `train_model()`
+
+```python
+train_model(
+    epochs: int = 50,
+    batch_size: int = 16,
+    img_size: tuple = (640, 640)
+) -> str
+```
+
+Trains a YOLO model.
+
+**Parameters:**
+- `epochs` (int): Number of training epochs
+- `batch_size` (int): Training batch size
+- `img_size` (tuple): Input image size
+
+**Returns:**
+- `str`: Path to trained model
+
+##### `export_to_onnx()`
+
+```python
+export_to_onnx(
+    model_path: str,
+    output_path: str = None
+) -> str
+```
+
+Exports trained model to ONNX format.
+
+**Parameters:**
+- `model_path` (str): Path to trained model
+- `output_path` (str, optional): Output path for ONNX file
+
+**Returns:**
+- `str`: Path to ONNX model
+
+## Fuzzy Classification
+
+### `FuzzyAreaClassifier`
+
+Implements fuzzy logic classification for litter quantity estimation.
+
+#### Constructor
+
+```python
+FuzzyAreaClassifier(
+    config: dict = None
+) -> FuzzyAreaClassifier
+```
+
+**Parameters:**
+- `config` (dict, optional): Fuzzy logic configuration
+
+#### Methods
+
+##### `classify_area()`
+
+```python
+classify_area(area_percent: float) -> str
+```
+
+Classifies litter area percentage into categories.
+
+**Parameters:**
+- `area_percent` (float): Area percentage (0-100)
+
+**Returns:**
+- `str`: Classification result ("sedikit", "sedang", "banyak")
+
+**Example:**
+```python
+classifier = FuzzyAreaClassifier()
+result = classifier.classify_area(15.5)  # Returns "sedang"
+```
+
+##### `get_membership_functions()`
+
+```python
+get_membership_functions() -> dict
+```
+
+Returns fuzzy membership function parameters.
+
+**Returns:**
+- `dict`: Membership function configuration
+
+##### `update_membership_functions()`
+
+```python
+update_membership_functions(
+    area_params: dict,
+    score_params: dict,
+    thresholds: dict
+) -> bool
+```
+
+Updates fuzzy membership function parameters.
+
+**Parameters:**
+- `area_params` (dict): Area membership parameters
+- `score_params` (dict): Score membership parameters
+- `thresholds` (dict): Classification thresholds
+
+**Returns:**
+- `bool`: Success status
+
+##### `get_configuration()`
+
+```python
+get_configuration() -> dict
+```
+
+Returns current fuzzy logic configuration.
+
+**Returns:**
+- `dict`: Configuration parameters
+
+## Inference & Visualization
+
+### `InferenceVisualizer`
+
+Handles model inference and result visualization.
+
+#### Constructor
+
+```python
+InferenceVisualizer(
+    model_path: str,
+    conf_threshold: float = 0.25
+) -> InferenceVisualizer
+```
+
+**Parameters:**
+- `model_path` (str): Path to trained model
+- `conf_threshold` (float): Confidence threshold
+
+#### Methods
+
+##### `run_inference()`
+
+```python
+run_inference(
+    image_path: str,
+    save_results: bool = True
+) -> dict
+```
+
+Runs inference on a single image.
+
+**Parameters:**
+- `image_path` (str): Path to input image
+- `save_results` (bool): Whether to save visualization
+
+**Returns:**
+- `dict`: Inference results
+
+##### `run_batch_inference()`
+
+```python
+run_batch_inference(
+    image_dir: str,
+    output_dir: str = None
+) -> dict
+```
+
+Runs inference on multiple images.
+
+**Parameters:**
+- `image_dir` (str): Directory containing images
+- `output_dir` (str, optional): Output directory
+
+**Returns:**
+- `dict`: Batch inference results
+
+##### `visualize_results()`
+
+```python
+visualize_results(
+    results: dict,
+    output_path: str = None
+) -> str
+```
+
+Creates visualizations of inference results.
+
+**Parameters:**
+- `results` (dict): Inference results
+- `output_path` (str, optional): Output path
+
+**Returns:**
+- `str`: Path to visualization
+
+## Metrics Analysis
+
+### `TrainingMetricsAnalyzer`
+
+Analyzes and visualizes training metrics.
+
+#### Constructor
+
+```python
+TrainingMetricsAnalyzer(
+    model_path: str
+) -> TrainingMetricsAnalyzer
+```
+
+**Parameters:**
+- `model_path` (str): Path to trained model
+
+#### Methods
+
+##### `analyze_training_metrics()`
+
+```python
+analyze_training_metrics() -> dict
+```
+
+Analyzes training metrics and generates plots.
+
+**Returns:**
+- `dict`: Training analysis results
+
+##### `plot_training_curves()`
+
+```python
+plot_training_curves(
+    metrics: dict,
+    save_path: str = None
+) -> str
+```
+
+Plots training curves (loss, accuracy, etc.).
+
+**Parameters:**
+- `metrics` (dict): Training metrics
+- `save_path` (str, optional): Save path for plot
+
+**Returns:**
+- `str`: Path to generated plot
+
+##### `generate_performance_report()`
+
+```python
+generate_performance_report() -> dict
+```
+
+Generates comprehensive performance report.
+
+**Returns:**
+- `dict`: Performance report
+
+## RKNN Conversion
+
+### `RknnConverter`
+
+Converts ONNX models to RKNN format for edge deployment.
+
+#### Constructor
+
+```python
+RknnConverter(
+    onnx_path: str,
+    output_dir: str = "rknn_models"
+) -> RknnConverter
+```
+
+**Parameters:**
+- `onnx_path` (str): Path to ONNX model
+- `output_dir` (str): Output directory for RKNN models
+
+#### Methods
+
+##### `convert_to_rknn()`
+
+```python
+convert_to_rknn(
+    target_platform: str = "rk3588",
+    optimization_level: int = 3
+) -> str
+```
+
+Converts ONNX model to RKNN format.
+
+**Parameters:**
+- `target_platform` (str): Target RKNN platform
+- `optimization_level` (int): Optimization level (0-3)
+
+**Returns:**
+- `str`: Path to RKNN model
+
+##### `validate_rknn_model()`
+
+```python
+validate_rknn_model(
+    rknn_path: str,
+    test_images: list = None
+) -> bool
+```
+
+Validates converted RKNN model.
+
+**Parameters:**
+- `rknn_path` (str): Path to RKNN model
+- `test_images` (list, optional): Test images for validation
+
+**Returns:**
+- `bool`: Validation status
+
+## Drive Management
+
+### `DriveManager`
+
+Manages Google Drive integration for file storage and sharing.
+
+#### Constructor
+
+```python
+DriveManager(
+    folder_id: str = None
+) -> DriveManager
+```
+
+**Parameters:**
+- `folder_id` (str, optional): Google Drive folder ID
+
+#### Methods
+
+##### `upload_file()`
+
+```python
+upload_file(
+    file_path: str,
+    drive_path: str = None
+) -> str
+```
+
+Uploads file to Google Drive.
+
+**Parameters:**
+- `file_path` (str): Local file path
+- `drive_path` (str, optional): Drive destination path
+
+**Returns:**
+- `str`: Drive file ID
+
+##### `download_file()`
+
+```python
+download_file(
+    file_id: str,
+    local_path: str = None
+) -> str
+```
+
+Downloads file from Google Drive.
+
+**Parameters:**
+- `file_id` (str): Drive file ID
+- `local_path` (str, optional): Local destination path
+
+**Returns:**
+- `str`: Local file path
+
+##### `list_files()`
+
+```python
+list_files(
+    folder_id: str = None
+) -> list
+```
+
+Lists files in Google Drive folder.
+
+**Parameters:**
+- `folder_id` (str, optional): Folder ID to list
+
+**Returns:**
+- `list`: List of file information
+
+## Exceptions
+
+### Custom Exception Hierarchy
+
+All custom exceptions inherit from `WasteDetectionError`.
+
+#### `WasteDetectionError`
+
+Base exception for the waste detection system.
+
+```python
+class WasteDetectionError(Exception):
+    """Base exception for waste detection system."""
+```
+
+#### `DatasetError`
+
+Raised for dataset-related errors.
+
+```python
+class DatasetError(WasteDetectionError):
+    """Raised for dataset-related errors."""
+```
+
+#### `ModelError`
+
+Raised for model-related errors.
+
+```python
+class ModelError(WasteDetectionError):
+    """Raised for model-related errors."""
+```
+
+#### `FuzzyLogicError`
+
+Raised for fuzzy logic errors.
+
+```python
+class FuzzyLogicError(WasteDetectionError):
+    """Raised for fuzzy logic errors."""
+```
+
+#### `InferenceError`
+
+Raised for inference-related errors.
+
+```python
+class InferenceError(WasteDetectionError):
+    """Raised for inference-related errors."""
+```
+
+#### `ConfigurationError`
+
+Raised for configuration-related errors.
+
+```python
+class ConfigurationError(WasteDetectionError):
+    """Raised for configuration-related errors."""
+```
+
+#### `FileOperationError`
+
+Raised for file operation errors.
+
+```python
+class FileOperationError(WasteDetectionError):
+    """Raised for file operation errors."""
+```
+
+#### `APIError`
+
+Raised for API-related errors.
+
+```python
+class APIError(WasteDetectionError):
+    """Raised for API-related errors."""
+```
+
+#### `ValidationError`
+
+Raised for validation errors.
+
+```python
+class ValidationError(WasteDetectionError):
+    """Raised for validation errors."""
+```
+
+## Testing
+
+### Test Runner
+
+#### `run_tests.py`
+
+Main test runner script with comprehensive test execution.
+
+##### Command Line Interface
+
+```bash
+# Run all tests
+python run_tests.py
+
+# Run specific category
+python run_tests.py --category security
+python run_tests.py --category config
+python run_tests.py --category fuzzy
+python run_tests.py --category exceptions
+python run_tests.py --category integration
+
+# Run specific test
+python run_tests.py --test config_manager
+
+# Verbose output
+python run_tests.py --verbose
+
+# Quiet output
+python run_tests.py --quiet
+```
+
+##### Functions
+
+###### `discover_and_run_tests()`
+
+```python
+discover_and_run_tests(
+    test_pattern: str = "test_*.py",
+    verbosity: int = 2
+) -> Tuple[unittest.TestResult, float]
+```
+
+Discovers and runs all tests in the tests directory.
+
+**Parameters:**
+- `test_pattern` (str): Pattern to match test files
+- `verbosity` (int): Test verbosity level (1=quiet, 2=normal, 3=verbose)
+
+**Returns:**
+- `Tuple[unittest.TestResult, float]`: Test results and execution time
+
+###### `run_specific_test()`
+
+```python
+run_specific_test(
+    test_name: str,
+    verbosity: int = 2
+) -> Tuple[unittest.TestResult, float]
+```
+
+Runs a specific test by name.
+
+**Parameters:**
+- `test_name` (str): Name of the test to run
+- `verbosity` (int): Test verbosity level
+
+**Returns:**
+- `Tuple[unittest.TestResult, float]`: Test results and execution time
+
+### Test Categories
+
+#### Security Tests
+- Secrets file validation
+- Git ignore checks
+- File permissions
+- API key validation
+
+#### Configuration Tests
+- Config manager functionality
+- Parameter validation
+- Environment-specific configs
+- Update operations
+
+#### Fuzzy Logic Tests
+- Classification accuracy
+- Input validation
+- Error handling
+- Performance testing
+
+#### Exception Tests
+- Exception hierarchy
+- Error propagation
+- Custom exception usage
+- Exception chaining
+
+#### Integration Tests
+- System workflows
+- Component interaction
+- End-to-end testing
+- Performance under load
+
+## Utilities
+
+### Secrets Validation
+
+#### `validate_secrets.py`
+
+Validates secrets configuration and security setup.
+
+##### Functions
+
+###### `check_secrets_file()`
+
+```python
+check_secrets_file() -> bool
+```
+
+Checks if secrets.yaml exists and is properly configured.
+
+**Returns:**
+- `bool`: Validation status
+
+###### `check_gitignore()`
+
+```python
+check_gitignore() -> bool
+```
+
+Checks if .gitignore properly excludes sensitive files.
+
+**Returns:**
+- `bool`: Validation status
+
+###### `check_git_status()`
+
+```python
+check_git_status() -> bool
+```
+
+Checks if secrets.yaml is being tracked by git.
+
+**Returns:**
+- `bool`: Validation status
+
+###### `run_security_audit()`
+
+```python
+run_security_audit() -> bool
+```
+
+Runs a comprehensive security audit.
+
+**Returns:**
+- `bool`: Audit status
+
+## Error Handling Patterns
+
+### Exception Usage
+
+```python
+try:
+    # Perform operation
+    result = system.train_and_export_model("v8n")
+except ModelError as e:
+    logger.error(f"Model training failed: {e}")
+    # Handle model error
+except ConfigurationError as e:
+    logger.error(f"Configuration error: {e}")
+    # Handle configuration error
+except WasteDetectionError as e:
+    logger.error(f"System error: {e}")
+    # Handle general system error
+```
+
+### Validation Patterns
+
+```python
+def validate_input(value, min_val, max_val):
+    if not isinstance(value, (int, float)):
+        raise ValidationError(f"Value must be numeric, got {type(value)}")
+    if value < min_val or value > max_val:
+        raise ValidationError(f"Value must be between {min_val} and {max_val}")
+    return value
+```
+
+### Configuration Patterns
+
+```python
+# Load configuration
+config_manager = ConfigManager()
+
+# Update configuration
+success = config_manager.update_config("model", "default_epochs", 100)
+if not success:
+    logger.warning("Configuration update failed")
+
+# Get configuration summary
+summary = config_manager.get_config_summary()
+```
+
+## Performance Considerations
+
+### Memory Management
+
+- Use generators for large datasets
+- Implement proper cleanup in destructors
+- Monitor memory usage during training
+- Use mixed precision training when available
+
+### Optimization
+
+- Batch processing for inference
+- Caching for frequently accessed data
+- Lazy loading for large models
+- Parallel processing where possible
+
+### Error Recovery
+
+- Graceful degradation on failures
+- Automatic retry mechanisms
+- Fallback configurations
+- Comprehensive logging
+
+## Best Practices
+
+### Code Organization
+
+- Use clear, descriptive names
+- Implement proper error handling
+- Add comprehensive documentation
+- Follow PEP 8 style guidelines
+
+### Testing
+
+- Write tests for all functions
+- Test edge cases and error conditions
+- Maintain high test coverage
+- Use mocking for external dependencies
+
+### Security
+
+- Never commit secrets to version control
+- Validate all inputs
+- Use secure file permissions
+- Implement proper access controls
+
+### Configuration
+
+- Use centralized configuration management
+- Validate configuration parameters
+- Support environment-specific configs
+- Provide sensible defaults
+
+---
+
+This API reference provides comprehensive documentation for all components of the Waste Detection System. For additional examples and use cases, refer to the individual module documentation and test files. 

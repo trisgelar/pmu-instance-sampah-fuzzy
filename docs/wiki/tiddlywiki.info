@@ -1,0 +1,209 @@
+{
+    "description": "PMU Instance Sampah Fuzzy Documentation",
+    "plugins": [
+        "tiddlywiki/filesystem",
+        "tiddlywiki/tiddlyweb"
+    ],
+    "themes": [
+        "tiddlywiki/vanilla",
+        "tiddlywiki/snowwhite"
+    ],
+    "tiddlers": [
+        {
+            "file": "tiddlers/import_warnings_fix_summary.tid",
+            "fields": {
+                "title": "Import Warnings Fix Summary",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/root_folder_cleanup_summary.tid",
+            "fields": {
+                "title": "Root Folder Cleanup Summary",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/gitignore_update_-_compressed_folder.tid",
+            "fields": {
+                "title": "Gitignore Update - Compressed Folder",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/naming_convention_reorganization_-_completed.tid",
+            "fields": {
+                "title": "Naming Convention Reorganization - Completed",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/comprehensive_testing_guide.tid",
+            "fields": {
+                "title": "Comprehensive Testing Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/compressed_folder_organization.tid",
+            "fields": {
+                "title": "Compressed Folder Organization",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/coco_structure_compliance.tid",
+            "fields": {
+                "title": "Coco Structure Compliance",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/code_restructure_and_testing_organization_summary.tid",
+            "fields": {
+                "title": "Code Restructure And Testing Organization Summary",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/pipeline_quick_reference.tid",
+            "fields": {
+                "title": "Pipeline Quick Reference",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/api_reference.tid",
+            "fields": {
+                "title": "Api Reference",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/pipeline_differences_and_folder_issues_guide.tid",
+            "fields": {
+                "title": "Pipeline Differences And Folder Issues Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/code_structure_and_testing_organization_memory.tid",
+            "fields": {
+                "title": "Code Structure And Testing Organization Memory",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/deployment_guide.tid",
+            "fields": {
+                "title": "Deployment Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/test_folder_naming_convention_reorganization.tid",
+            "fields": {
+                "title": "Test Folder Naming Convention Reorganization",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/onnx_and_rknn_troubleshooting_guide.tid",
+            "fields": {
+                "title": "Onnx And Rknn Troubleshooting Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/dataset_fix_integration_guide.tid",
+            "fields": {
+                "title": "Dataset Fix Integration Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/git_push_summary_-_successful_deployment.tid",
+            "fields": {
+                "title": "Git Push Summary - Successful Deployment",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/pipeline_scripts_guide.tid",
+            "fields": {
+                "title": "Pipeline Scripts Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/google_colab_execution_guide_for_pmu_instance_sampah_fuzzy.tid",
+            "fields": {
+                "title": "Google Colab Execution Guide For Pmu Instance Sampah Fuzzy",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/setup_structure_improvements.tid",
+            "fields": {
+                "title": "Setup Structure Improvements",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/test_structure_improvements.tid",
+            "fields": {
+                "title": "Test Structure Improvements",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/git_quick_reference_for_structural_changes.tid",
+            "fields": {
+                "title": "Git Quick Reference For Structural Changes",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/unit_testing_improvements.tid",
+            "fields": {
+                "title": "Unit Testing Improvements",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/enhanced_training_system_guide.tid",
+            "fields": {
+                "title": "Enhanced Training System Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/git_conflict_resolution_guide.tid",
+            "fields": {
+                "title": "Git Conflict Resolution Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/structural_changes_case_study.tid",
+            "fields": {
+                "title": "Structural Changes Case Study",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/cuda_version_management_guide.tid",
+            "fields": {
+                "title": "Cuda Version Management Guide",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+        {
+            "file": "tiddlers/python_3.11.x_compatibility_analysis.tid",
+            "fields": {
+                "title": "Python 3.11.X Compatibility Analysis",
+                "type": "text/vnd.tiddlywiki"
+            }
+        },
+    ]
+}

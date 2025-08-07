@@ -1,0 +1,448 @@
+title: Comprehensive Testing Guide
+type: text/vnd.tiddlywiki
+tags: pipeline training inference onnx rknn troubleshooting installation testing configuration documentation guide reference cuda python unit structure docs documentation
+created: 20250807170027
+modified: 20250807170027
+source: docs/TESTING_GUIDE.md
+
+# Comprehensive Testing Guide
+
+## 🎯 **Overview**
+
+This guide provides comprehensive documentation for the testing system in the Waste Detection System. The testing system is organized into logical categories for systematic validation and quality assurance.
+
+## 📁 **Test Structure**
+
+```
+tests/
+├── onnx_testing/         # 🔧 ONNX Testing (check0-3)
+│   ├── check_onnx_environment.py    # Environment setup (check0)
+│   ├── check_onnx_models.py         # Model validation (check1)
+│   ├── check_onnx_conversion.py     # Conversion testing (check2)
+│   └── check_onnx_inference.py      # Inference testing (check3)
+├── type_checking/        # 🔍 Type Validation
+│   ├── type_validator.py
+│   ├── type_fixer.py
+│   └── type_checker.py
+├── bug_fixing/           # 🐛 Bug Detection
+│   ├── bug_detector.py
+│   ├── bug_fixer.py
+│   └── bug_validator.py
+├── validation/           # ✅ General Validation
+│   ├── model_validator.py
+│   ├── data_validator.py
+│   └── config_validator.py
+├── unit/                 # 📊 Unit Tests
+├── integration/          # 🔗 Integration Tests
+├── diagnostic/           # 🔍 Diagnostic Scripts
+├── fixes/                # 🔧 Fix Verification
+├── dataset_tools/        # 📁 Dataset Tools
+├── training/             # 🏋️ Training Tests
+├── existing_results/     # 📊 Existing Results Tests
+└── utils/                # 🛠️ Utility Tests
+```
+
+## 🔧 **ONNX Testing System (check0, check1, check2, check3)**
+
+### **Purpose**
+Systematic validation of ONNX model lifecycle from environment setup to inference testing.
+
+### **check0 - Environment Setup Validation**
+
+**File**: `tests/onnx_testing/check_onnx_environment.py`
+
+**Purpose**: Validates the complete environment for ONNX operations.
+
+**Checks Performed**:
+- ✅ Python version compatibility (3.8+)
+- ✅ PyTorch installation and CUDA support
+- ✅ Ultralytics installation
+- ✅ ONNX and ONNX Runtime installation
+- ✅ OpenCV and NumPy installation
+- ✅ Memory and GPU memory availability
+- ✅ ONNX export capability testing
+- ✅ Project structure validation
+
+**Usage**:
+```bash
+python tests/onnx_testing/check_onnx_environment.py
+```
+
+**Example Output**:
+```
+============================================================
+🔍 ONNX Environment Checker (check0)
+============================================================
+
+📋 Python Version
+----------------------------------------
+Python: 3.11.0
+✅ Python version is compatible for ONNX
+
+📋 PyTorch Installation
+----------------------------------------
+PyTorch Version: 2.1.0
+CUDA Available: True
+CUDA Version: 12.1
+GPU Device: NVIDIA GeForce RTX 4090
+GPU Memory: 24.0 GB
+✅ GPU environment detected for ONNX
+✅ PyTorch ONNX export support available
+```
+
+### **check1 - Model Validation**
+
+**File**: `tests/onnx_testing/check_onnx_models.py`
+
+**Purpose**: Validates ONNX model files and their properties.
+
+**Checks Performed**:
+- ✅ ONNX model file existence
+- ✅ ONNX file validity (load and validate)
+- ✅ Model size validation (reasonable sizes)
+- ✅ Model metadata validation (IR version, opset, producer)
+- ✅ Model input specifications (shape, type, dimensions)
+- ✅ Model output specifications (shape, type, dimensions)
+- ✅ Model opset compatibility (version 11+)
+
+**Usage**:
+```bash
+python tests/onnx_testing/check_onnx_models.py
+```
+
+### **check2 - Conversion Testing**
+
+**File**: `tests/onnx_testing/check_onnx_conversion.py`
+
+**Purpose**: Tests the ONNX conversion process and validates conversion results.
+
+**Checks Performed**:
+- ✅ PyTorch model existence
+- ✅ Conversion environment validation
+- ✅ Conversion process testing (actual export)
+- ✅ Conversion output validation
+- ✅ Conversion result validation (loadable models)
+- ✅ Conversion performance testing (timing)
+
+**Usage**:
+```bash
+python tests/onnx_testing/check_onnx_conversion.py
+```
+
+### **check3 - Inference Testing**
+
+**File**: `tests/onnx_testing/check_onnx_inference.py`
+
+**Purpose**: Tests ONNX model inference and performance.
+
+**Checks Performed**:
+- ✅ ONNX model existence
+- ✅ Inference environment validation
+- ✅ Inference process testing (actual inference)
+- ✅ Inference accuracy testing (finite values, valid outputs)
+- ✅ Inference performance testing (timing, statistics)
+- ✅ Inference memory usage testing (memory consumption)
+
+**Usage**:
+```bash
+python tests/onnx_testing/check_onnx_inference.py
+```
+
+## 🐛 **Bug Detection System**
+
+### **Purpose**
+Identifies common issues in the codebase using static analysis and pattern matching.
+
+### **Bug Types Detected**
+
+#### **Import Bugs**
+- Unused imports
+- Circular imports
+- Missing imports (yaml, torch, etc.)
+
+#### **Syntax Bugs**
+- Missing colons after control structures
+- Unmatched parentheses
+- Indentation issues
+
+#### **Path Bugs**
+- Hardcoded paths
+- Relative path issues
+- Missing path joins
+
+#### **Type Bugs**
+- Type mismatches in concatenation
+- Potential division by zero
+- Index out of bounds access
+
+#### **Logic Bugs**
+- Unreachable code after return
+- Potential infinite loops
+- Empty except blocks
+- File operations without context managers
+
+### **Usage**
+```bash
+# Run bug detection
+python run_tests.py --category bug_fixing
+
+# Run specific bug detector
+python tests/bug_fixing/bug_detector.py
+```
+
+### **Example Output**
+```
+============================================================
+🔍 Bug Detector
+============================================================
+
+📋 Import Bug Detection
+----------------------------------------
+⚠️ Import bugs found:
+   - main_colab.py:15 - Potentially unused import: import yaml
+   - modules/config_manager.py:8 - Missing torch import but torch used: torch.cuda.is_available()
+
+📋 Syntax Bug Detection
+----------------------------------------
+✅ No syntax bugs detected
+
+📊 Bug Detection Summary:
+----------------------------------------
+❌ Import Bugs
+✅ Syntax Bugs
+❌ Path Bugs
+✅ Type Bugs
+✅ Logic Bugs
+
+Overall: 3/5 checks passed
+```
+
+## 🔍 **Type Checking System**
+
+### **Purpose**
+Validates data types and structures throughout the project.
+
+### **Validation Areas**
+
+#### **Configuration Types**
+- YAML configuration file validation
+- Model configuration type checking
+- Dataset configuration validation
+- Training configuration verification
+
+#### **Model Types**
+- ModelProcessor attribute validation
+- Path attribute type checking
+- Configuration attribute validation
+
+#### **Data Types**
+- Dataset structure validation
+- Required file existence
+- Data.yaml structure validation
+
+#### **Path Types**
+- Required directory validation
+- File permission checking
+- Path accessibility testing
+
+### **Usage**
+```bash
+# Run type checking
+python run_tests.py --category type_checking
+
+# Run specific type validator
+python tests/type_checking/type_validator.py
+```
+
+## ✅ **Validation System**
+
+### **Purpose**
+General validation tools for models, data, and configurations.
+
+### **Validation Components**
+
+#### **Model Validator**
+- Validates model files and structures
+- Checks model compatibility
+- Verifies model integrity
+
+#### **Data Validator**
+- Validates dataset and data formats
+- Checks data consistency
+- Verifies data integrity
+
+#### **Config Validator**
+- Validates configuration files
+- Checks configuration consistency
+- Verifies configuration integrity
+
+### **Usage**
+```bash
+# Run validation
+python run_tests.py --category validation
+```
+
+## 🚀 **Running Tests**
+
+### **Test Runner Usage**
+
+```bash
+# Run all tests
+python run_tests.py
+
+# Run specific categories
+python run_tests.py --category onnx_testing
+python run_tests.py --category type_checking
+python run_tests.py --category bug_fixing
+python run_tests.py --category validation
+
+# Run specific test
+python run_tests.py --test config_manager
+
+# Verbose output
+python run_tests.py --category unit --verbose
+
+# Quiet output
+python run_tests.py --category integration --quiet
+```
+
+### **Individual Test Execution**
+
+```bash
+# ONNX testing
+python tests/onnx_testing/check_onnx_environment.py
+python tests/onnx_testing/check_onnx_models.py
+python tests/onnx_testing/check_onnx_conversion.py
+python tests/onnx_testing/check_onnx_inference.py
+
+# Bug detection
+python tests/bug_fixing/bug_detector.py
+
+# Type validation
+python tests/type_checking/type_validator.py
+
+# Validation
+python tests/validation/model_validator.py
+```
+
+## 📊 **Test Results Interpretation**
+
+### **Success Indicators**
+- ✅ All checks passed
+- 🎉 No bugs detected
+- ✅ All validations successful
+
+### **Warning Indicators**
+- ⚠️ Some checks failed
+- ⚠️ Bugs detected (review recommended)
+- ⚠️ Some validations failed
+
+### **Error Indicators**
+- ❌ Critical checks failed
+- ❌ Multiple bugs detected
+- ❌ Validation failures
+
+## 🔧 **Troubleshooting**
+
+### **Common Issues**
+
+#### **Import Errors**
+```bash
+# Solution: Ensure project root is in Python path
+export PYTHONPATH="${PYTHONPATH}:/path/to/project"
+```
+
+#### **Missing Dependencies**
+```bash
+# Solution: Install required packages
+pip install torch ultralytics onnx onnxruntime opencv-python numpy
+```
+
+#### **Permission Errors**
+```bash
+# Solution: Check file permissions
+chmod +x tests/onnx_testing/check_onnx_environment.py
+```
+
+#### **Path Issues**
+```bash
+# Solution: Use absolute paths or check relative paths
+python -c "import sys; print(sys.path)"
+```
+
+### **Getting Help**
+
+1. **Check test output** for specific error messages
+2. **Run individual test files** for detailed debugging
+3. **Use verbose flag** for more detailed output
+4. **Review test logs** for additional context
+5. **Check documentation** for specific test requirements
+
+## 📚 **Related Documentation**
+
+- **[Tests README](tests/README.md)** - Comprehensive test documentation
+- **[Code Structure Memory](docs/CODE_STRUCTURE_MEMORY.md)** - Testing organization memory
+- **[Code Restructure Summary](docs/CODE_RESTRUCTURE_SUMMARY.md)** - Implementation details
+- **[ONNX/RKNN Troubleshooting](docs/ONNX_RKNN_TROUBLESHOOTING.md)** - ONNX-specific issues
+- **[Pipeline Differences Guide](docs/PIPELINE_DIFFERENCES_GUIDE.md)** - Pipeline comparison
+
+## 🎯 **Best Practices**
+
+### **Writing Tests**
+1. **Choose the right category** for your test
+2. **Follow naming conventions** consistently
+3. **Include proper documentation** and comments
+4. **Use graceful error handling** for imports
+5. **Provide clear usage examples**
+
+### **Running Tests**
+1. **Start with environment checks** (check0)
+2. **Run specific categories** for focused testing
+3. **Use verbose output** for debugging
+4. **Check test results** carefully
+5. **Address issues** before proceeding
+
+### **Maintenance**
+1. **Keep tests up-to-date** with code changes
+2. **Add new tests** for new functionality
+3. **Update documentation** when adding tests
+4. **Review test results** regularly
+5. **Refactor tests** for better organization
+
+## 🚀 **Quick Reference**
+
+### **Essential Commands**
+```bash
+# Environment check
+python tests/onnx_testing/check_onnx_environment.py
+
+# Bug detection
+python tests/bug_fixing/bug_detector.py
+
+# Type validation
+python tests/type_checking/type_validator.py
+
+# All tests
+python run_tests.py
+
+# Specific category
+python run_tests.py --category onnx_testing
+```
+
+### **Test Categories**
+```bash
+onnx_testing      # ONNX testing (check0-3)
+type_checking     # Type validation
+bug_fixing        # Bug detection
+validation        # General validation
+unit              # Unit tests
+integration       # Integration tests
+diagnostic        # Diagnostic scripts
+fixes             # Fix verification
+dataset_tools     # Dataset tools
+training          # Training tests
+existing_results  # Existing results tests
+utils             # Utility tests
+```
+
+This comprehensive testing guide provides everything you need to understand and use the testing system effectively! 🎉 

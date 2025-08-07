@@ -1,0 +1,119 @@
+title: Pipeline Quick Reference
+type: text/vnd.tiddlywiki
+tags: pipeline yolo training inference onnx rknn troubleshooting testing documentation guide reference python structure docs documentation
+created: 20250807170027
+modified: 20250807170027
+source: docs/PIPELINE_QUICK_REFERENCE.md
+
+# Pipeline Quick Reference
+
+## 📊 **Pipeline Comparison Table**
+
+| Pipeline Type | Command | ONNX Export | Inference | Analysis | RKNN | Success Rate | Folder Status |
+|---------------|---------|-------------|-----------|----------|------|--------------|---------------|
+| **Safe** | `--models v8n` | ❌ | ⏭️ Skip | ✅ | ❌ | High | Empty |
+| **ONNX Export** | `--models v8n --onnx-export` | ✅ | ⏭️ Skip | ✅ | ✅ | **Best** | **Full** |
+| **Complete** | `--models v8n --complete-pipeline` | ✅ | ✅ | ✅ | ✅ | Low | Full |
+
+## 🎯 **Recommended Usage**
+
+### **For Your Use Case (Existing Training):**
+```bash
+python main_colab.py --models v8n --onnx-export
+```
+
+### **For New Training:**
+```bash
+python main_colab.py --models v8n --onnx-export --force-retrain
+```
+
+### **For Testing (Safe Mode):**
+```bash
+python main_colab.py --models v8n
+```
+
+## 📁 **Expected Folder Structure**
+
+### **Before Running:**
+```
+results/
+├── runs/
+│   └── segment_train_v8n3/
+│       └── weights/
+│           └── best.pt                    # ✅ Exists
+├── onnx_models/                          # ❌ Empty
+└── rknn_models/                          # ❌ Empty
+```
+
+### **After ONNX Export Pipeline:**
+```
+results/
+├── runs/
+│   └── segment_train_v8n3/
+│       └── weights/
+│           └── best.pt                    # ✅ Exists
+├── onnx_models/
+│   └── yolov8n_is.onnx                  # ✅ Created
+└── rknn_models/
+    └── yolov8n_is.rknn                  # ✅ Created
+```
+
+## 🔍 **Common Issues and Solutions**
+
+### **Issue: Empty ONNX/RKNN Folders**
+**Cause:** ONNX models weren't created during original training
+**Solution:** Use `--onnx-export` pipeline
+
+### **Issue: RGBA Error in Inference**
+**Cause:** Image format compatibility issues
+**Solution:** Use `--onnx-export` (skips inference)
+
+### **Issue: Pipeline Fails Completely**
+**Cause:** Inference step crashes the pipeline
+**Solution:** Use `--onnx-export` (avoids problematic step)
+
+## 📋 **Verification Commands**
+
+```bash
+# Check what you have
+ls -la results/runs/*/weights/best.pt
+ls -la results/onnx_models/
+ls -la results/rknn_models/
+
+# Run recommended pipeline
+python main_colab.py --models v8n --onnx-export
+
+# Verify results
+ls -la results/onnx_models/
+ls -la results/rknn_models/
+```
+
+## 🚀 **Quick Start**
+
+1. **Check your environment:**
+   ```bash
+   python check_onnx_rknn_environment.py
+   ```
+
+2. **Run the recommended pipeline:**
+   ```bash
+   python main_colab.py --models v8n --onnx-export
+   ```
+
+3. **Verify success:**
+   ```bash
+   ls -la results/onnx_models/
+   ls -la results/rknn_models/
+   ```
+
+4. **Check model sizes:**
+   ```bash
+   du -h results/onnx_models/yolov8n_is.onnx
+   du -h results/rknn_models/yolov8n_is.rknn
+   ```
+
+## 📚 **Detailed Documentation**
+
+- **[Pipeline Differences Guide](PIPELINE_DIFFERENCES_GUIDE.md)**: Complete explanation
+- **[ONNX/RKNN Troubleshooting](ONNX_RKNN_TROUBLESHOOTING.md)**: Technical details
+- **[Environment Diagnostic](check_onnx_rknn_environment.py)**: Check your setup 

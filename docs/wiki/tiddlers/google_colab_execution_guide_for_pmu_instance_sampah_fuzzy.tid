@@ -1,0 +1,436 @@
+title: Google Colab Execution Guide for PMU Instance Sampah Fuzzy
+type: text/vnd.tiddlywiki
+tags: yolo training inference onnx rknn troubleshooting deployment configuration documentation guide reference git cuda python structure docs documentation
+created: 20250807170027
+modified: 20250807170027
+source: docs/COLAB_EXECUTION_GUIDE.md
+
+# Google Colab Execution Guide for PMU Instance Sampah Fuzzy
+
+This guide provides step-by-step instructions for executing the waste detection system on Google Colab.
+
+## 📋 Prerequisites
+
+Before starting, ensure you have:
+- A Google account
+- Access to Google Colab
+- A Roboflow API key (for dataset access)
+- Basic understanding of Python and machine learning concepts
+
+## 🚀 Step-by-Step Execution Guide
+
+### Step 1: Open Google Colab
+
+1. Go to [Google Colab](https://colab.research.google.com/)
+2. Sign in with your Google account
+3. Create a new notebook or open an existing one
+
+### Step 2: Clone the Repository
+
+Run this cell to clone your repository:
+
+```python
+# Clone the repository
+!git clone https://github.com/trisgelar/pmu-instance-sampah-fuzzy.git
+
+# Navigate to the project directory
+%cd pmu-instance-sampah-fuzzy
+
+# List contents to verify
+!ls -la
+```
+
+### Step 3: Install Dependencies
+
+Install all required packages:
+
+```python
+# Install required packages
+!pip install ultralytics
+!pip install roboflow
+!pip install opencv-python
+!pip install matplotlib
+!pip install seaborn
+!pip install pandas
+!pip install numpy
+!pip install PyYAML
+!pip install scikit-fuzzy
+!pip install tensorboard
+
+# Install additional dependencies for RKNN conversion (optional)
+!pip install onnx
+!pip install onnxruntime
+```
+
+### Step 4: Mount Google Drive (Optional but Recommended)
+
+Mount your Google Drive to save results:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Create a directory for results
+!mkdir -p /content/drive/MyDrive/pmu-waste-detection-results
+```
+
+### Step 5: Create Secrets Configuration
+
+Create the `secrets.yaml` file with your API keys:
+
+```python
+import yaml
+
+# Create secrets.yaml file
+secrets_data = {
+    'roboflow_api_key': 'YOUR_ROBOFLOW_API_KEY_HERE'  # Replace with your actual API key
+}
+
+with open('secrets.yaml', 'w') as f:
+    yaml.dump(secrets_data, f)
+
+print("secrets.yaml created successfully!")
+```
+
+**Important**: Replace `'YOUR_ROBOFLOW_API_KEY_HERE'` with your actual Roboflow API key.
+
+### Step 6: Verify Configuration
+
+Check if the configuration files are properly set up:
+
+```python
+# Verify configuration files exist
+import os
+
+print("Checking configuration files...")
+print(f"config.yaml exists: {os.path.exists('config.yaml')}")
+print(f"secrets.yaml exists: {os.path.exists('secrets.yaml')}")
+
+# Display configuration structure
+if os.path.exists('config.yaml'):
+    with open('config.yaml', 'r') as f:
+        print("\nConfiguration file contents:")
+        print(f.read())
+```
+
+### Step 7: Import and Initialize the System
+
+Import the main system and initialize it:
+
+```python
+# Import the main system
+from main_colab import WasteDetectionSystemColab
+
+# Initialize the system
+try:
+    system = WasteDetectionSystemColab()
+    print("✅ System initialized successfully!")
+    
+    # Display system status
+    status = system.get_system_status()
+    print(f"System Status: {status}")
+    
+except Exception as e:
+    print(f"❌ System initialization failed: {e}")
+```
+
+### Step 8: Check CUDA/GPU Status
+
+Verify GPU availability and optimize settings:
+
+```python
+# Check CUDA status
+cuda_status = system.get_cuda_status()
+print("CUDA Status:")
+print(f"Memory Info: {cuda_status.get('memory_info', 'N/A')}")
+print(f"Optimal Batch Size: {cuda_status.get('optimal_batch_size', 'N/A')}")
+
+# Clear CUDA cache if needed
+if 'error' not in cuda_status:
+    system.clear_cuda_cache()
+    print("✅ CUDA cache cleared")
+```
+
+### Step 9: Prepare Datasets
+
+Download and prepare your datasets:
+
+```python
+# Prepare datasets
+try:
+    system.dataset_manager.prepare_datasets()
+    system.dataset_manager.zip_datasets_folder()
+    print("✅ Datasets prepared successfully!")
+except Exception as e:
+    print(f"❌ Dataset preparation failed: {e}")
+```
+
+### Step 10: Train YOLOv8n Model
+
+Train the first model (YOLOv8n):
+
+```python
+# Train YOLOv8n model
+try:
+    print("🚀 Starting YOLOv8n training...")
+    run_dir_v8n = system.train_and_export_model("v8n", epochs=50, batch_size=16)
+    
+    if run_dir_v8n:
+        print(f"✅ YOLOv8n training completed! Run directory: {run_dir_v8n}")
+    else:
+        print("❌ YOLOv8n training failed")
+        
+except Exception as e:
+    print(f"❌ YOLOv8n training failed: {e}")
+```
+
+### Step 11: Analyze Training Results
+
+Analyze the training metrics:
+
+```python
+# Analyze training results
+if run_dir_v8n:
+    try:
+        system.analyze_training_run(run_dir_v8n, "v8n")
+        print("✅ Training analysis completed!")
+    except Exception as e:
+        print(f"❌ Training analysis failed: {e}")
+```
+
+### Step 12: Run Inference and Visualization
+
+Run inference on sample images:
+
+```python
+# Run inference and visualization
+if run_dir_v8n:
+    try:
+        system.run_inference_and_visualization(run_dir_v8n, "v8n", num_inference_images=6)
+        print("✅ Inference and visualization completed!")
+    except Exception as e:
+        print(f"❌ Inference failed: {e}")
+```
+
+### Step 13: Train Additional Models (Optional)
+
+Train YOLOv10n and YOLOv11n models:
+
+```python
+# Train YOLOv10n model
+try:
+    print("🚀 Starting YOLOv10n training...")
+    run_dir_v10n = system.train_and_export_model("v10n", epochs=50, batch_size=16)
+    
+    if run_dir_v10n:
+        print(f"✅ YOLOv10n training completed!")
+        system.analyze_training_run(run_dir_v10n, "v10n")
+        system.run_inference_and_visualization(run_dir_v10n, "v10n", num_inference_images=6)
+    else:
+        print("❌ YOLOv10n training failed")
+        
+except Exception as e:
+    print(f"❌ YOLOv10n training failed: {e}")
+
+# Train YOLOv11n model
+try:
+    print("🚀 Starting YOLOv11n training...")
+    run_dir_v11n = system.train_and_export_model("v11n", epochs=50, batch_size=16)
+    
+    if run_dir_v11n:
+        print(f"✅ YOLOv11n training completed!")
+        system.analyze_training_run(run_dir_v11n, "v11n")
+        system.run_inference_and_visualization(run_dir_v11n, "v11n", num_inference_images=6)
+    else:
+        print("❌ YOLOv11n training failed")
+        
+except Exception as e:
+    print(f"❌ YOLOv11n training failed: {e}")
+```
+
+### Step 14: Convert to RKNN Models (Optional)
+
+Convert models to RKNN format for edge deployment:
+
+```python
+# Convert to RKNN models
+try:
+    system.convert_and_zip_rknn_models("v8n")
+    print("✅ RKNN conversion completed for YOLOv8n!")
+except Exception as e:
+    print(f"❌ RKNN conversion failed: {e}")
+```
+
+### Step 15: Save Results to Google Drive
+
+Save all results to your Google Drive:
+
+```python
+# Save results to Google Drive
+try:
+    system.drive_manager.save_all_results_to_drive(folder_to_save="pmu-waste-detection-results")
+    print("✅ Results saved to Google Drive!")
+except Exception as e:
+    print(f"❌ Failed to save to Drive: {e}")
+```
+
+### Step 16: Monitor Training with TensorBoard
+
+Monitor training progress in real-time:
+
+```python
+# Load TensorBoard extension
+%load_ext tensorboard
+
+# Start TensorBoard
+%tensorboard --logdir runs
+```
+
+## 📊 Expected Outputs
+
+After successful execution, you should have:
+
+### Generated Files:
+- **Model Weights**: `.pt` files in `runs/train/exp*/weights/`
+- **ONNX Models**: `.onnx` files in `onnx_models/`
+- **RKNN Models**: `.rknn` files in `rknn_models/` (if conversion enabled)
+- **Compressed Archives**: `.zip` files for easy download
+- **Inference Results**: Images and CSV files with detection results
+- **Training Metrics**: Plots and tables showing model performance
+
+### Directory Structure:
+```
+pmu-instance-sampah-fuzzy/
+├── runs/
+│   ├── train/
+│   │   ├── exp*/  # Training runs
+│   │   └── detect/  # Detection results
+├── onnx_models/
+│   ├── yolov8n_is.onnx
+│   ├── yolov10n_is.onnx
+│   └── yolov11n_is.onnx
+├── rknn_models/
+│   ├── yolov8n_is.rknn
+│   ├── yolov10n_is.rknn
+│   └── yolov11n_is.rknn
+├── inference_results/
+│   ├── superimposed_images/
+│   └── inference_results.csv
+└── datasets/
+    └── (downloaded datasets)
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions:
+
+#### 1. **API Key Errors**
+```python
+# Verify your secrets.yaml file
+import yaml
+with open('secrets.yaml', 'r') as f:
+    secrets = yaml.safe_load(f)
+    print(f"API Key configured: {'roboflow_api_key' in secrets}")
+```
+
+#### 2. **Memory Issues**
+```python
+# Clear GPU memory
+import torch
+torch.cuda.empty_cache()
+
+# Reduce batch size
+system.update_configuration('model', 'default_batch_size', 8)
+```
+
+#### 3. **Dataset Download Issues**
+```python
+# Check dataset availability
+import os
+print(f"data.yaml exists: {os.path.exists('datasets/data.yaml')}")
+print(f"Dataset directory contents: {os.listdir('datasets/')}")
+```
+
+#### 4. **Training Failures**
+```python
+# Check CUDA availability
+import torch
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"GPU count: {torch.cuda.device_count()}")
+```
+
+## 📈 Performance Optimization Tips
+
+### For Faster Training:
+1. **Use GPU**: Ensure CUDA is available
+2. **Optimize Batch Size**: Use `system.get_cuda_status()['optimal_batch_size']`
+3. **Reduce Image Size**: Modify `img_size` in config.yaml
+4. **Clear Cache**: Run `system.clear_cuda_cache()` between training runs
+
+### For Better Results:
+1. **Increase Epochs**: Set higher epoch count for better convergence
+2. **Adjust Learning Rate**: Modify in config.yaml
+3. **Use Data Augmentation**: Enable in training configuration
+4. **Monitor Metrics**: Use TensorBoard for real-time monitoring
+
+## 🎯 Quick Start Script
+
+For experienced users, here's a quick execution script:
+
+```python
+# Quick execution script
+!git clone https://github.com/trisgelar/pmu-instance-sampah-fuzzy.git
+%cd pmu-instance-sampah-fuzzy
+
+# Install dependencies
+!pip install ultralytics roboflow opencv-python matplotlib seaborn pandas numpy PyYAML scikit-fuzzy tensorboard
+
+# Mount Drive
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Create secrets (replace with your API key)
+import yaml
+with open('secrets.yaml', 'w') as f:
+    yaml.dump({'roboflow_api_key': 'YOUR_API_KEY'}, f)
+
+# Initialize and run
+from main_colab import WasteDetectionSystemColab
+system = WasteDetectionSystemColab()
+
+# Prepare datasets
+system.dataset_manager.prepare_datasets()
+
+# Train model
+run_dir = system.train_and_export_model("v8n", epochs=50, batch_size=16)
+
+# Analyze and visualize
+if run_dir:
+    system.analyze_training_run(run_dir, "v8n")
+    system.run_inference_and_visualization(run_dir, "v8n", num_inference_images=6)
+
+print("✅ Training completed successfully!")
+```
+
+## 📞 Support
+
+If you encounter issues:
+
+1. **Check Logs**: Review the console output for error messages
+2. **Verify Configuration**: Ensure all files are properly set up
+3. **Check Dependencies**: Verify all packages are installed
+4. **Monitor Resources**: Ensure sufficient GPU memory and storage
+5. **Review Documentation**: Check the main README.md for additional details
+
+## 🔗 Additional Resources
+
+- **Repository**: [https://github.com/trisgelar/pmu-instance-sampah-fuzzy](https://github.com/trisgelar/pmu-instance-sampah-fuzzy)
+- **API Reference**: See `docs/API_REFERENCE.md`
+- **Deployment Guide**: See `docs/DEPLOYMENT_GUIDE.md`
+- **Troubleshooting**: See `docs/` for additional guides
+
+---
+
+**Happy Training! 🚀**
+
+*This guide is designed to help you successfully execute the waste detection system on Google Colab. Follow each step carefully and ensure all prerequisites are met before starting.* 

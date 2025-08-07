@@ -1,0 +1,174 @@
+title: Gitignore Update - Compressed Folder
+type: text/vnd.tiddlywiki
+tags: pipeline yolo training inference onnx rknn testing configuration documentation reference git python structure docs documentation
+created: 20250807170027
+modified: 20250807170027
+source: docs/GITIGNORE_COMPRESSED_FOLDER.md
+
+# Gitignore Update - Compressed Folder
+
+## ✅ **Update Completed**
+
+Successfully added the `compressed/` folder to `.gitignore` to prevent compressed files from being tracked by git.
+
+## 🔧 **Changes Made**
+
+### **Updated `.gitignore`:**
+
+#### **Added to Dataset Files Section:**
+```gitignore
+# Compressed files (large and generated)
+# Contains zip files of datasets, models, weights, and inference results
+compressed/
+```
+
+## 📋 **Why Compressed Folder is Ignored**
+
+### **1. Large File Size:**
+- ✅ Zip files can be very large (hundreds of MB to GB)
+- ✅ Would bloat the git repository
+- ✅ Slow down clone and pull operations
+
+### **2. Generated Content:**
+- ✅ Compressed files are generated from existing data
+- ✅ Can be recreated from source files
+- ✅ No need to version control generated content
+
+### **3. Sensitive Information:**
+- ✅ May contain model weights and training data
+- ✅ Could include proprietary or sensitive information
+- ✅ Better to keep these files local
+
+### **4. Repository Performance:**
+- ✅ Keeps repository size manageable
+- ✅ Faster git operations
+- ✅ Better for collaboration
+
+## 📁 **Files That Will Be Ignored**
+
+### **Dataset Files:**
+- ✅ `compressed/datasets.zip`
+- ✅ `compressed/dataset.zip`
+
+### **Model Files:**
+- ✅ `compressed/rknn_models.zip`
+- ✅ `compressed/segment_v8n_weights.zip`
+- ✅ `compressed/segment_v10n_weights.zip`
+- ✅ `compressed/segment_v11n_weights.zip`
+
+### **Inference Results:**
+- ✅ `compressed/yolo*_segment_inference_results.zip`
+
+## 🔄 **Workflow Impact**
+
+### **For Developers:**
+- ✅ Compressed files remain local
+- ✅ Can still use all functionality
+- ✅ Files are created in `compressed/` folder
+- ✅ Can share files manually if needed
+
+### **For Repository:**
+- ✅ Clean git history
+- ✅ Manageable repository size
+- ✅ Fast clone and pull operations
+- ✅ No large binary files in version control
+
+## 🚀 **Best Practices**
+
+### **1. Local Development:**
+```bash
+# Compressed files are created locally
+python main_colab.py --model v8n --epochs 50
+
+# Files saved to compressed/ folder
+ls compressed/
+# Output: datasets.zip, rknn_models.zip, segment_v8n_weights.zip
+```
+
+### **2. Sharing Results:**
+```bash
+# Manual sharing of specific files
+git add compressed/datasets.zip  # If needed for documentation
+git commit -m "Add sample dataset for documentation"
+
+# Or share via other means (Google Drive, etc.)
+```
+
+### **3. CI/CD Considerations:**
+```yaml
+# In CI/CD pipelines, compressed files are ignored
+# But can be created during testing
+- name: Run tests
+  run: |
+    python run_tests.py --category all
+    # compressed/ folder created but not committed
+```
+
+## 📊 **Benefits Achieved**
+
+### **1. Repository Management:**
+- ✅ Keeps repository size small
+- ✅ Fast git operations
+- ✅ Clean commit history
+
+### **2. Security:**
+- ✅ Sensitive files not in version control
+- ✅ Model weights remain local
+- ✅ Training data protected
+
+### **3. Performance:**
+- ✅ Faster clone operations
+- ✅ Reduced bandwidth usage
+- ✅ Better for remote development
+
+### **4. Flexibility:**
+- ✅ Can still create compressed files locally
+- ✅ Manual sharing when needed
+- ✅ No impact on functionality
+
+## 🎯 **Configuration Reference**
+
+### **Current .gitignore Structure:**
+```gitignore
+# =============================================================================
+# WASTE DETECTION SYSTEM - SENSITIVE FILES
+# =============================================================================
+
+# Dataset files (large and potentially sensitive)
+datasets/
+data/
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Compressed files (large and generated)
+# Contains zip files of datasets, models, weights, and inference results
+compressed/
+
+# Results files
+results/
+
+# Model files (large and potentially sensitive)
+*.pt
+*.pth
+*.onnx
+*.rknn
+*.tflite
+*.pb
+models/
+checkpoints/
+weights/
+```
+
+## 🎉 **Result**
+
+The `compressed/` folder is now properly ignored by git, ensuring:
+
+1. **📦 Clean Repository** - No large zip files in version control
+2. **🔒 Security** - Sensitive files remain local
+3. **⚡ Performance** - Fast git operations
+4. **🛠️ Functionality** - All features still work locally
+5. **📚 Documentation** - Clear explanation of why files are ignored
+
+The project maintains full functionality while keeping the repository clean and performant! 🎉 

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMU Instance Sampah Fuzzy - Wiki</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .wiki-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .main-content {
+            margin-left: 300px;
+            flex: 1;
+            padding: 30px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .wiki-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ecf0f1;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section h3 {
+            color: #3498db;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-links a.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .subsection {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .subsection h3 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .feature-list li:before {
+            content: "✅ ";
+            margin-right: 10px;
+        }
+
+        .command-example {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .wiki-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wiki-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="wiki-title">PMU Instance Sampah Fuzzy</div>
+            
+            <div class="nav-section">
+                <h3>Getting Started</h3>
+                <ul class="nav-links">
+                    <li><a href="#overview" onclick="showSection('overview')">Overview</a></li>
+                    <li><a href="#installation" onclick="showSection('installation')">Installation</a></li>
+                    <li><a href="#quick-start" onclick="showSection('quick-start')">Quick Start</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <h3>Pipeline Scripts</h3>
+                <ul class="nav-links">
+                    <li><a href="#pipeline-overview" onclick="showSection('pipeline-overview')">Pipeline Overview</a></li>
+                    <li><a href="#yolov8-pipeline" onclick="showSection('yolov8-pipeline')">YOLOv8 Pipeline</a></li>
+                    <li><a href="#yolov10-pipeline" onclick="showSection('yolov10-pipeline')">YOLOv10 Pipeline</a></li>
+                    <li><a href="#yolov11-pipeline" onclick="showSection('yolov11-pipeline')">YOLOv11 Pipeline</a></li>
+                    <li><a href="#master-pipeline" onclick="showSection('master-pipeline')">Master Pipeline</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <h3>Scenarios</h3>
+                <ul class="nav-links">
+                    <li><a href="#training-scenarios" onclick="showSection('training-scenarios')">Training Scenarios</a></li>
+                    <li><a href="#inference-scenarios" onclick="showSection('inference-scenarios')">Inference Scenarios</a></li>
+                    <li><a href="#export-scenarios" onclick="showSection('export-scenarios')">Export Scenarios</a></li>
+                    <li><a href="#custom-scenarios" onclick="showSection('custom-scenarios')">Custom Scenarios</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <h3>Troubleshooting</h3>
+                <ul class="nav-links">
+                    <li><a href="#common-issues" onclick="showSection('common-issues')">Common Issues</a></li>
+                    <li><a href="#onnx-rknn-issues" onclick="showSection('onnx-rknn-issues')">ONNX/RKNN Issues</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Overview Section -->
+            <div id="overview" class="content-section active">
+                <h1 class="section-title">Project Overview</h1>
+                
+                <div class="subsection">
+                    <h3>What is PMU Instance Sampah Fuzzy?</h3>
+                    <p>PMU Instance Sampah Fuzzy is a comprehensive machine learning project focused on trash image segmentation using YOLO (You Only Look Once) models. The project supports multiple YOLO versions (v8, v10, v11) and provides automated pipeline scripts for training, inference, and model export.</p>
+                </div>
+
+                <div class="subsection">
+                    <h3>Key Features</h3>
+                    <ul class="feature-list">
+                        <li>Multi-YOLO support (v8, v10, v11)</li>
+                        <li>Automated pipeline scripts</li>
+                        <li>ONNX and RKNN model export</li>
+                        <li>Comprehensive testing framework</li>
+                        <li>Google Drive integration</li>
+                        <li>Virtual environment management</li>
+                        <li>Colored output and progress tracking</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3>Project Structure</h3>
+                    <div class="code-block">
+pmu-instance-sampah-fuzzy/
+├── run_yolov8_pipeline.sh      # YOLOv8 pipeline
+├── run_yolov10_pipeline.sh     # YOLOv10 pipeline
+├── run_yolov11_pipeline.sh     # YOLOv11 pipeline
+├── run_all_pipelines.sh        # Master pipeline
+├── main_colab.py               # Main orchestration
+├── modules/                    # Core modules
+├── tests/                      # Testing framework
+├── docs/                       # Documentation
+├── config.yaml                 # Configuration
+└── compressed/                 # Output files
+                    </div>
+                </div>
+            </div>
+
+            <!-- Installation Section -->
+            <div id="installation" class="content-section">
+                <h1 class="section-title">Installation Guide</h1>
+                
+                <div class="subsection">
+                    <h3>Prerequisites</h3>
+                    <ul class="feature-list">
+                        <li>Python 3.11+</li>
+                        <li>CUDA-compatible GPU (optional)</li>
+                        <li>Git</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3>Setup Steps</h3>
+                    <h4>1. Clone the Repository</h4>
+                    <div class="command-example">
+git clone https://github.com/your-repo/pmu-instance-sampah-fuzzy.git
+cd pmu-instance-sampah-fuzzy
+                    </div>
+
+                    <h4>2. Create Virtual Environment</h4>
+                    <div class="command-example">
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+                    </div>
+
+                    <h4>3. Install Dependencies</h4>
+                    <div class="command-example">
+pip install -r requirements.txt
+                    </div>
+
+                    <h4>4. Make Scripts Executable</h4>
+                    <div class="command-example">
+chmod +x run_*.sh
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Note:</strong> The project includes automated scripts that handle virtual environment activation and dependency management.
+                </div>
+            </div>
+
+            <!-- Quick Start Section -->
+            <div id="quick-start" class="content-section">
+                <h1 class="section-title">Quick Start Guide</h1>
+                
+                <div class="subsection">
+                    <h3>1. Check Available Options</h3>
+                    <div class="command-example">
+./run_all_pipelines.sh help
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>2. Use Existing Results (Recommended)</h3>
+                    <div class="command-example">
+./run_yolov8_pipeline.sh use_existing
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>3. Train New Model</h3>
+                    <div class="command-example">
+./run_yolov8_pipeline.sh train_new
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>4. Run Complete Pipeline</h3>
+                    <div class="command-example">
+./run_yolov8_pipeline.sh complete_pipeline
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <strong>Success!</strong> You should now see training results, analysis, and model exports in the respective directories.
+                </div>
+            </div>
+
+            <!-- Pipeline Overview Section -->
+            <div id="pipeline-overview" class="content-section">
+                <h1 class="section-title">Pipeline Scripts Overview</h1>
+                
+                <div class="subsection">
+                    <h3>Available Scripts</h3>
+                    <ul class="feature-list">
+                        <li><strong>run_yolov8_pipeline.sh</strong> - YOLOv8 specific pipeline</li>
+                        <li><strong>run_yolov10_pipeline.sh</strong> - YOLOv10 specific pipeline</li>
+                        <li><strong>run_yolov11_pipeline.sh</strong> - YOLOv11 specific pipeline</li>
+                        <li><strong>run_all_pipelines.sh</strong> - Master script for all versions</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3>Common Scenarios</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 12px; border: 1px solid #dee2e6;">Scenario</th>
+                            <th style="padding: 12px; border: 1px solid #dee2e6;">Description</th>
+                            <th style="padding: 12px; border: 1px solid #dee2e6;">Command</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Train New</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Train from scratch</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;"><code>train_new</code></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Use Existing</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Use trained models</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;"><code>use_existing</code></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Complete Pipeline</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Full workflow</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;"><code>complete_pipeline</code></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Safe Pipeline</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">Skip problematic steps</td>
+                            <td style="padding: 12px; border: 1px solid #dee2e6;"><code>safe_pipeline</code></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- YOLOv8 Pipeline Section -->
+            <div id="yolov8-pipeline" class="content-section">
+                <h1 class="section-title">YOLOv8 Pipeline</h1>
+                
+                <div class="subsection">
+                    <h3>Usage</h3>
+                    <div class="command-example">
+./run_yolov8_pipeline.sh [scenario]
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>Available Scenarios</h3>
+                    <ul class="feature-list">
+                        <li><code>train_new</code> - Train new YOLOv8 model</li>
+                        <li><code>use_existing</code> - Use existing results</li>
+                        <li><code>complete_pipeline</code> - Full pipeline</li>
+                        <li><code>safe_pipeline</code> - Safe execution</li>
+                        <li><code>onnx_export</code> - Export to ONNX</li>
+                        <li><code>analysis_only</code> - Analysis only</li>
+                        <li><code>inference_only</code> - Inference only</li>
+                        <li><code>rknn_only</code> - RKNN conversion</li>
+                        <li><code>all_models</code> - All variants</li>
+                        <li><code>custom</code> - Custom configuration</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h3>Configuration</h3>
+                    <div class="code-block">
+MODEL_VERSION="v8n"  # Change to v8s, v8m, v8l, v8x
+EPOCHS=50
+BATCH_SIZE=16
+IMAGE_SIZE=640
+DATASET_PATH="datasets"
+SAVE_TO_DRIVE=true
+                    </div>
+                </div>
+            </div>
+
+            <!-- YOLOv10 Pipeline Section -->
+            <div id="yolov10-pipeline" class="content-section">
+                <h1 class="section-title">YOLOv10 Pipeline</h1>
+                <div class="subsection">
+                    <h3>Usage</h3>
+                    <div class="command-example">
+./run_yolov10_pipeline.sh [scenario]
+                    </div>
+                    <p>Similar to YOLOv8 but for YOLOv10 models. Supports all the same scenarios.</p>
+                </div>
+            </div>
+
+            <!-- YOLOv11 Pipeline Section -->
+            <div id="yolov11-pipeline" class="content-section">
+                <h1 class="section-title">YOLOv11 Pipeline</h1>
+                <div class="subsection">
+                    <h3>Usage</h3>
+                    <div class="command-example">
+./run_yolov11_pipeline.sh [scenario]
+                    </div>
+                    <p>Similar to YOLOv8 but for YOLOv11 models. Supports all the same scenarios.</p>
+                </div>
+            </div>
+
+            <!-- Master Pipeline Section -->
+            <div id="master-pipeline" class="content-section">
+                <h1 class="section-title">Master Pipeline</h1>
+                <div class="subsection">
+                    <h3>Usage</h3>
+                    <div class="command-example">
+./run_all_pipelines.sh [version] [scenario]
+                    </div>
+                    <p>Unified interface for all YOLO versions. Examples:</p>
+                    <div class="command-example">
+./run_all_pipelines.sh v8 train_new
+./run_all_pipelines.sh v10 use_existing
+./run_all_pipelines.sh all complete_pipeline
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Scenarios Section -->
+            <div id="training-scenarios" class="content-section">
+                <h1 class="section-title">Training Scenarios</h1>
+                <div class="subsection">
+                    <h3>train_new</h3>
+                    <p>Train a new model from scratch with the following steps:</p>
+                    <ul class="feature-list">
+                        <li>Download dataset from Roboflow</li>
+                        <li>Initialize YOLO model</li>
+                        <li>Train for specified epochs</li>
+                        <li>Save training results</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Inference Scenarios Section -->
+            <div id="inference-scenarios" class="content-section">
+                <h1 class="section-title">Inference Scenarios</h1>
+                <div class="subsection">
+                    <h3>inference_only</h3>
+                    <p>Run inference and visualization on existing models:</p>
+                    <ul class="feature-list">
+                        <li>Load trained model</li>
+                        <li>Run inference on test images</li>
+                        <li>Generate visualizations</li>
+                        <li>Save results</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Export Scenarios Section -->
+            <div id="export-scenarios" class="content-section">
+                <h1 class="section-title">Export Scenarios</h1>
+                <div class="subsection">
+                    <h3>onnx_export</h3>
+                    <p>Export PyTorch model to ONNX format for deployment.</p>
+                </div>
+                <div class="subsection">
+                    <h3>rknn_only</h3>
+                    <p>Convert model to RKNN format for RKNN-compatible devices.</p>
+                </div>
+            </div>
+
+            <!-- Custom Scenarios Section -->
+            <div id="custom-scenarios" class="content-section">
+                <h1 class="section-title">Custom Scenarios</h1>
+                <div class="subsection">
+                    <h3>custom</h3>
+                    <p>Use custom configuration with modified parameters. Edit the script to change:</p>
+                    <div class="code-block">
+CUSTOM_EPOCHS=100
+CUSTOM_BATCH_SIZE=8
+CUSTOM_IMAGE_SIZE=512
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Issues Section -->
+            <div id="common-issues" class="content-section">
+                <h1 class="section-title">Common Issues & Solutions</h1>
+                
+                <div class="subsection">
+                    <h3>Permission Denied</h3>
+                    <div class="info-box">
+                        <strong>Error:</strong> Permission denied when running scripts
+                    </div>
+                    <div class="command-example">
+chmod +x run_*.sh
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>Virtual Environment Not Found</h3>
+                    <div class="info-box">
+                        <strong>Error:</strong> Virtual environment not detected
+                    </div>
+                    <div class="command-example">
+source .venv/bin/activate
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>Missing Dependencies</h3>
+                    <div class="info-box">
+                        <strong>Error:</strong> ModuleNotFoundError: No module named 'yaml'
+                    </div>
+                    <div class="command-example">
+pip install -r requirements.txt
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONNX/RKNN Issues Section -->
+            <div id="onnx-rknn-issues" class="content-section">
+                <h1 class="section-title">ONNX/RKNN Issues</h1>
+                <div class="subsection">
+                    <h3>ONNX Export Issues</h3>
+                    <p>Common issues with ONNX export and their solutions:</p>
+                    <ul class="feature-list">
+                        <li>Check ONNX installation</li>
+                        <li>Verify model compatibility</li>
+                        <li>Ensure correct input/output shapes</li>
+                    </ul>
+                </div>
+                <div class="subsection">
+                    <h3>RKNN Conversion Issues</h3>
+                    <p>Common issues with RKNN conversion and their solutions:</p>
+                    <ul class="feature-list">
+                        <li>Install RKNN-Toolkit2</li>
+                        <li>Check CUDA compatibility</li>
+                        <li>Verify target platform</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            const selectedSection = document.getElementById(sectionId);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+            }
+
+            // Update navigation active state
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Add active class to clicked link
+            event.target.classList.add('active');
+        }
+
+        // Initialize with overview section
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('overview');
+        });
+    </script>
+</body>
+</html>
