@@ -1,0 +1,67 @@
+{
+  "name": "pmu-instance-sampah-fuzzy",
+  "version": "1.0.0",
+  "description": "PMU Instance Sampah Fuzzy - Machine Learning project with TiddlyWiki documentation",
+  "main": "main_colab.py",
+  "scripts": {
+    "tiddly:start": "cd docs/wiki && tiddlywiki . --listen",
+    "tiddly:init": "cd docs/wiki && tiddlywiki . --init",
+    "tiddly:build": "cd docs/wiki && tiddlywiki . --build",
+    "tiddly:cleanup": "cd docs/wiki && ./cleanup_storylist.sh",
+    "tiddly:version": "tiddlywiki --version",
+    "tiddly:help": "tiddlywiki --help",
+    "install:tiddlywiki": "npm install -g tiddlywiki",
+    "update:tiddlywiki": "npm update -g tiddlywiki",
+    "check:node": "./run_with_node.sh check-tiddlywiki",
+    "setup": "npm run install:tiddlywiki && npm run check:node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/pmu-instance-sampah-fuzzy.git"
+  },
+  "keywords": [
+    "machine-learning",
+    "yolo",
+    "fuzzy-logic",
+    "computer-vision",
+    "tiddlywiki",
+    "documentation",
+    "python",
+    "pytorch"
+  ],
+  "author": "PMU Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "globalDependencies": {
+    "tiddlywiki": "^5.3.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": [],
+  "config": {
+    "tiddlywiki": {
+      "port": "8080",
+      "host": "127.0.0.1",
+      "path": "docs/wiki"
+    }
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "files": [
+    "modules/",
+    "docs/",
+    "tests/",
+    "setup/",
+    "*.py",
+    "*.sh",
+    "*.yaml",
+    "README.md"
+  ]
+}

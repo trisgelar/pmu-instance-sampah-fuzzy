@@ -1,0 +1,187 @@
+title: Node.js Script Usage Guide
+type: text/markdown
+tags: node tiddlywiki scripts development tools
+created: 20250809120000000
+modified: 20250809120000000
+
+# 🚀 Node.js & TiddlyWiki Management Script
+
+## Overview
+
+The enhanced `run_with_node.sh` script provides comprehensive Node.js and TiddlyWiki environment management for the PMU Instance Sampah Fuzzy project.
+
+## Features
+
+### ✨ **Enhanced Capabilities**
+
+- 🔍 **Node.js Environment Detection** - Automatically finds and configures Node.js
+- 📦 **TiddlyWiki Installation Management** - Installs TiddlyWiki globally if missing
+- 📊 **Version Checking** - Shows current vs. latest available versions
+- 🔄 **Update Management** - Easy TiddlyWiki updates
+- 🎨 **Colored Output** - Beautiful, easy-to-read terminal output
+- ⚡ **Command Passthrough** - Run any Node.js/TiddlyWiki command
+
+## Usage
+
+### Basic Usage
+
+```bash
+# Show help and available commands
+./run_with_node.sh
+
+# Run any TiddlyWiki command
+./run_with_node.sh tiddlywiki --version
+./run_with_node.sh tiddlywiki --help
+```
+
+### Special Management Commands
+
+```bash
+# Check TiddlyWiki installation and show detailed info
+./run_with_node.sh tiddlywiki-info
+
+# Force install TiddlyWiki (if needed)
+./run_with_node.sh install-tiddlywiki
+
+# Update TiddlyWiki to latest version
+./run_with_node.sh update-tiddlywiki
+
+# Quick check TiddlyWiki status
+./run_with_node.sh check-tiddlywiki
+```
+
+### Common TiddlyWiki Operations
+
+```bash
+# Start TiddlyWiki server (recommended way)
+./docs/wiki/start.sh
+
+# Alternative: Direct server start
+./run_with_node.sh tiddlywiki docs/wiki --listen
+
+# Clean up temporary files
+./run_with_node.sh ./docs/wiki/cleanup_storylist.sh
+```
+
+## Package.json Integration
+
+The project now includes a `package.json` with useful npm scripts:
+
+```bash
+# Install TiddlyWiki globally
+npm run install:tiddlywiki
+
+# Start TiddlyWiki server
+npm run tiddly:start
+
+# Clean up story list files
+npm run tiddly:cleanup
+
+# Check TiddlyWiki version
+npm run tiddly:version
+
+# Complete setup (install + check)
+npm run setup
+```
+
+## Script Output
+
+### Successful Run Example
+
+```
+🚀 Node.js & TiddlyWiki Environment Manager
+==========================================
+🔍 Using Node.js from: /home/user/.nvm/versions/node/v22.18.0/bin
+📦 Loading nvm...
+🔧 Checking Node.js installation...
+✅ Node.js found: v22.18.0
+✅ npm found: 10.9.3
+🎯 TiddlyWiki Management
+========================
+✅ TiddlyWiki found: 5.3.8
+📊 TiddlyWiki Information:
+  📌 Version: 5.3.8
+  📁 Path: /home/user/.nvm/versions/node/v22.18.0/bin/tiddlywiki
+  🌐 Latest available: 5.3.8
+✅ You have the latest version!
+```
+
+### Auto-Installation Example
+
+```
+❌ TiddlyWiki not found
+🤔 TiddlyWiki not found. Would you like to install it?
+💡 Installing automatically...
+📦 Installing TiddlyWiki globally...
+✅ TiddlyWiki installed successfully!
+✅ Installed version: 5.3.8
+```
+
+## Error Handling
+
+The script includes comprehensive error handling:
+
+- ❌ **Node.js not found** - Exits with error code 1
+- ❌ **npm not found** - Exits with error code 1  
+- ❌ **TiddlyWiki installation failed** - Shows helpful messages
+- ⚠️ **Update available** - Warns when newer version exists
+
+## Benefits
+
+### 🎯 **For Developers**
+
+1. **Consistent Environment** - Always uses correct Node.js version
+2. **Auto-Setup** - Installs missing dependencies automatically
+3. **Version Awareness** - Know when updates are available
+4. **Easy Management** - Simple commands for common operations
+
+### 🚀 **For Project**
+
+1. **Reliable Documentation** - TiddlyWiki always works
+2. **Version Control** - Track TiddlyWiki versions across team
+3. **Easy Onboarding** - New team members get working environment
+4. **Maintenance** - Easy updates and health checks
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| **Permission errors during install** | Run with `sudo` or fix npm permissions |
+| **TiddlyWiki not found after install** | Check npm global bin directory in PATH |
+| **Old Node.js version** | Update Node.js via nvm |
+| **Script not executable** | Run `chmod +x run_with_node.sh` |
+
+### Debug Commands
+
+```bash
+# Check Node.js and npm paths
+which node npm
+
+# Check npm global directory
+npm config get prefix
+
+# List globally installed packages
+npm list -g --depth=0
+
+# Check TiddlyWiki specifically
+npm list -g tiddlywiki
+```
+
+## Integration with Memory
+
+The script follows project preferences [[memory:5480954]]:
+- User prefers to run commands using `node.sh` (now `run_with_node.sh`)
+- Provides consistent Node.js environment management
+
+## File Locations
+
+- **Main script**: `./run_with_node.sh`
+- **Package config**: `./package.json`
+- **TiddlyWiki docs**: `./docs/wiki/`
+- **Start script**: `./docs/wiki/start.sh`
+
+---
+
+*This enhanced script provides robust Node.js and TiddlyWiki management for reliable documentation and development workflows.*
