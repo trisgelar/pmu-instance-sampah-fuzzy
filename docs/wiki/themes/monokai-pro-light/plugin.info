@@ -1,0 +1,9 @@
+{
+    "title": "$:/themes/monokai-pro-light",
+    "name": "Monokai Pro Light",
+    "author": "PMU Team",
+    "core-version": ">=5.0.0",
+    "plugin-type": "theme",
+    "description": "Monokai Pro Light theme for PMU Instance Sampah Fuzzy",
+    "plugin-priority": "0"
+}

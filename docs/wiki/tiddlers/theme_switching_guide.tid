@@ -1,0 +1,91 @@
+title: Theme Switching Guide
+type: text/markdown
+tags: theme guide documentation
+created: 20250807220000
+modified: 20250807220000
+
+# Theme Switching Guide
+
+This guide shows you how to switch themes using TiddlyWiki's built-in control panel.
+
+## Available Themes
+
+We have created two beautiful Monokai Pro themes:
+
+* **Monokai Pro Dark** - Dark theme with high contrast
+* **Monokai Pro Light** - Light theme for daytime reading
+
+## How to Switch Themes
+
+### Method 1: Using Control Panel
+
+1. **Open Control Panel**: Click the gear icon (⚙️) in the top-right corner
+2. **Go to Appearance**: Look for "Appearance" or "Theme" section
+3. **Select Theme**: Choose from the dropdown menu:
+   - `$:/themes/pmu/monokai-pro-dark` (Dark theme)
+   - `$:/themes/pmu/monokai-pro-light` (Light theme)
+4. **Apply**: The theme will change immediately
+
+### Method 2: Using Advanced Search
+
+1. **Open Advanced Search**: Press `Ctrl+Shift+F` (or `Cmd+Shift+F` on Mac)
+2. **Search for Theme**: Type `$:/themes/pmu/monokai-pro-dark` or `$:/themes/pmu/monokai-pro-light`
+3. **Click the Theme**: This will open the theme tiddler
+4. **Apply Theme**: Look for an "Apply" or "Use" button
+
+### Method 3: Direct URL
+
+You can also switch themes by going directly to:
+* `http://127.0.0.1:8080/#$:/themes/pmu/monokai-pro-dark`
+* `http://127.0.0.1:8080/#$:/themes/pmu/monokai-pro-light`
+
+!! Theme Features
+
+### Monokai Pro Dark
+* **Background**: Dark gray (`#2d2a2e`)
+* **Text**: Yellow (`#fce566`)
+* **Headings**: Green (`#a6e22e`)
+* **Code**: Orange (`#fd971f`)
+* **Links**: Light green (`#a8ff60`)
+
+### Monokai Pro Light
+* **Background**: Light gray (`#fafafa`)
+* **Text**: Dark gray (`#2d2a2e`)
+* **Headings**: Purple (`#6f42c1`)
+* **Code**: Red (`#d73a49`)
+* **Links**: Dark green (`#718c00`)
+
+!! Troubleshooting
+
+### Theme Not Appearing
+* Make sure the server is restarted after adding new themes
+* Check that the theme tiddlers are properly loaded
+* Try refreshing the page
+
+### Theme Not Applying
+* Clear browser cache
+* Try a different browser
+* Check browser console for errors
+
+### Default Theme
+* The default theme is usually "Vanilla" or "Snow White"
+* You can always return to the default theme through the control panel
+
+!! Related Tiddlers
+
+* [[Monokai Pro Dark Theme]]
+* [[Monokai Pro Light Theme]]
+* [[TiddlyWiki Theme Development Guide]]
+* [[JavaScript Test]]
+
+!! Quick Commands
+
+If you're comfortable with browser console, you can also switch themes with:
+
+```javascript
+// Switch to dark theme
+$tw.wiki.addTiddler({title: "$:/theme", text: "$:/themes/pmu/monokai-pro-dark"});
+
+// Switch to light theme
+$tw.wiki.addTiddler({title: "$:/theme", text: "$:/themes/pmu/monokai-pro-light"});
+```

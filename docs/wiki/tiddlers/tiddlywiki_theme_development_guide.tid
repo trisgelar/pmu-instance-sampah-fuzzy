@@ -1,564 +1,527 @@
 title: TiddlyWiki Theme Development Guide
 type: text/markdown
-tags: theme development tiddlywiki documentation tutorial
-created: 20250807220000
-modified: 20250807220000
+tags: theme development tiddlywiki documentation tutorial monokai palette
+created: 20250807143456789
+modified: 20250809114500000
 
-# TiddlyWiki Theme Development Guide
+# 🎨 TiddlyWiki Theme & Palette Development Guide
 
-## 🎨 Complete Guide to Creating Themes in TiddlyWiki
+*Complete guide based on successful implementation of Monokai Pro themes and palettes*
 
-This guide walks you through creating a custom theme in TiddlyWiki from start to finish, using our Monokai Pro theme as a practical example.
+## 🎯 Overview
 
-## 📋 Table of Contents
+This guide provides **step-by-step instructions** for creating custom themes and palettes in TiddlyWiki. **Themes** use the auto-discovery folder structure, while **palettes** use simple tiddler-based approach. Based on real implementation experience with Monokai Pro Dark/Light themes.
 
-1. [Understanding TiddlyWiki Themes](#understanding-tiddlywiki-themes)
-2. [Planning Your Theme](#planning-your-theme)
-3. [Creating the Theme Structure](#creating-theme-structure)
-4. [Writing CSS for Your Theme](#writing-css)
-5. [Creating a Theme Switcher](#creating-theme-switcher)
-6. [Testing and Debugging](#testing-debugging)
-7. [Deployment and Configuration](#deployment-configuration)
-8. [Monokai Pro Example](#monokai-pro-example)
+## 📁 Project Structure
 
----
-
-## 🎯 Understanding TiddlyWiki Themes
-
-### What is a TiddlyWiki Theme?
-
-A TiddlyWiki theme is a **tiddler** (document) that contains CSS styling to change the appearance of your wiki. Themes can:
-
-- Change colors, fonts, and layouts
-- Provide multiple variants (dark/light)
-- Include interactive elements
-- Be switched dynamically
-
-### Theme Components
-
-1. **Theme Tiddler** - Contains CSS styles
-2. **Theme Switcher** - Interactive interface to change themes
-3. **Configuration** - Setup in `tiddlywiki.info`
-
----
-
-## 📝 Planning Your Theme
-
-### Step 1: Define Your Color Palette
-
-Before writing code, plan your colors:
-
-```css
-/* Example: Monokai Pro Dark Palette */
---primary-bg: #2d2a2e;      /* Dark background */
---primary-text: #fce566;     /* Yellow text */
---accent-color: #a6e22e;     /* Green headings */
---code-color: #fd971f;       /* Orange code */
---link-color: #a8ff60;       /* Light green links */
+### Complete Directory Layout
+```
+docs/wiki/
+├── themes/                          ← Auto-discovered by TiddlyWiki
+│   ├── monokai-pro-dark/
+│   │   ├── plugin.info              ← Theme metadata
+│   │   ├── base.tid                 ← Main CSS & HTML structure
+│   │   ├── reset.tid                ← CSS reset
+│   │   ├── ThemeTweaks.tid          ← Theme customization options
+│   │   ├── sticky.tid               ← Sticky title functionality
+│   │   ├── metrics.multids          ← Layout metrics
+│   │   ├── options.multids          ← Theme options
+│   │   └── settings.multids         ← Theme settings
+│   └── monokai-pro-light/
+│       └── (same structure as dark)
+├── tiddlers/                        ← Wiki content & PALETTES
+│   ├── monokai_pro_dark_palette.tid ← Palette as tiddler (WORKS!)
+│   ├── monokai_pro_light_palette.tid← Palette as tiddler (WORKS!)
+│   └── (other wiki content)
+├── tiddlywiki.info                  ← Main config (NO theme registration!)
+└── cleanup_storylist.sh             ← Utility script
 ```
 
-### Step 2: Identify Key Elements
+## 🎨 Theme Development
 
-Map out what needs styling:
+### Step 1: Create Theme Directory Structure
 
-- **Body** - Main background and text
-- **Tiddlers** - Individual document containers
-- **Headings** - H1, H2, H3 elements
-- **Code blocks** - Syntax highlighting
-- **Links** - Navigation and external links
-- **Sidebar** - Navigation panel
-- **Tags** - Category labels
+```bash
+# Create theme directories
+mkdir -p docs/wiki/themes/your-theme-name
 
----
-
-## 🏗️ Creating the Theme Structure
-
-### Step 1: Create Theme Tiddler
-
-Create a new file: `docs/wiki/tiddlers/your_theme.tid`
-
-```tiddlywiki
-title: $:/themes/yourname/your-theme
-type: text/vnd.tiddlywiki
-tags: $:/tags/Theme
-description: Your theme description
-author: Your Name
-version: 1.0.0
-license: MIT
-
-!! Your Theme Name
-
-Description of your theme...
-
-!! CSS Styles
-
-```css
-/* Your CSS goes here */
-```
+# Navigate to theme directory
+cd docs/wiki/themes/your-theme-name
 ```
 
-### Step 2: Theme Naming Convention
+### Step 2: Create plugin.info
 
-Use this format: `$:/themes/yourname/theme-name`
-
-Examples:
-- `$:/themes/pmu/monokai-pro`
-- `$:/themes/john/dark-theme`
-- `$:/themes/company/corporate`
-
----
-
-## 🎨 Writing CSS for Your Theme
-
-### Step 1: CSS Variables (Custom Properties)
-
-Define your color palette as CSS variables:
-
-```css
-/* Theme Variables */
-.your-theme-dark {
-    --bg-primary: #2d2a2e;
-    --text-primary: #fce566;
-    --accent-primary: #a6e22e;
-    --code-primary: #fd971f;
-    --border-primary: #75715e;
-}
-```
-
-### Step 2: Apply to Body
-
-Always style the body element:
-
-```css
-/* Apply theme to body */
-body.your-theme-dark {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-```
-
-### Step 3: Style Key Elements
-
-```css
-/* Tiddler styling */
-.your-theme-dark .tc-tiddler-frame {
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-primary);
-}
-
-/* Heading styling */
-.your-theme-dark h1, .your-theme-dark h2, .your-theme-dark h3 {
-    color: var(--accent-primary);
-    border-bottom: 2px solid var(--border-primary);
-}
-
-/* Code styling */
-.your-theme-dark code {
-    background-color: var(--code-bg);
-    color: var(--code-primary);
-    border: 1px solid var(--border-primary);
-    border-radius: 3px;
-    padding: 2px 4px;
-}
-```
-
-### Step 4: Content Areas
-
-Style main content containers:
-
-```css
-/* Story river (main content) */
-.your-theme-dark .tc-story-river {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-/* Tiddler body */
-.your-theme-dark .tc-tiddler-body {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-```
-
----
-
-## 🔄 Creating a Theme Switcher
-
-### Step 1: Create Theme Switcher Tiddler
-
-Create: `docs/wiki/tiddlers/theme_switcher.tid`
-
-```tiddlywiki
-title: Theme Switcher
-type: text/vnd.tiddlywiki
-tags: theme switcher
-
-!! Theme Switcher
-
-Click buttons to switch themes:
-
-<div style="text-align: center; padding: 20px;">
-    <button onclick="switchToDark()">🌙 Dark Theme</button>
-    <button onclick="switchToLight()">☀️ Light Theme</button>
-</div>
-
-<script>
-// Theme switching functions
-window.switchToDark = function() {
-    document.body.classList.remove('your-theme-light');
-    document.body.classList.add('your-theme-dark');
-    localStorage.setItem('current-theme', 'dark');
-};
-
-window.switchToLight = function() {
-    document.body.classList.remove('your-theme-dark');
-    document.body.classList.add('your-theme-light');
-    localStorage.setItem('current-theme', 'light');
-};
-
-// Auto-load saved theme
-window.addEventListener('load', function() {
-    const savedTheme = localStorage.getItem('current-theme') || 'dark';
-    if (savedTheme === 'light') {
-        window.switchToLight();
-    } else {
-        window.switchToDark();
-    }
-});
-</script>
-```
-
-### Step 2: JavaScript Best Practices
-
-```javascript
-// Always remove old classes before adding new ones
-document.body.classList.remove('old-theme');
-document.body.classList.add('new-theme');
-
-// Save user preference
-localStorage.setItem('theme-preference', 'theme-name');
-
-// Load saved preference
-const savedTheme = localStorage.getItem('theme-preference');
-```
-
----
-
-## 🧪 Testing and Debugging
-
-### Step 1: Browser Developer Tools
-
-1. **Open Developer Tools** (F12)
-2. **Inspect Elements** to see applied classes
-3. **Check Console** for JavaScript errors
-4. **Test CSS** in the Elements tab
-
-### Step 2: Common Issues
-
-```css
-/* Problem: Theme not applying */
-/* Solution: Check class names match */
-body.your-theme-dark { /* ✓ Correct */
-body.your-theme-dark { /* ✗ Wrong - missing closing brace */
-
-/* Problem: Colors not changing */
-/* Solution: Use !important for overrides */
-.your-theme-dark .tc-tiddler-frame {
-    background-color: var(--bg-primary) !important;
-}
-```
-
-### Step 3: Debugging Checklist
-
-- [ ] Theme tiddler is loaded in `tiddlywiki.info`
-- [ ] CSS classes match JavaScript functions
-- [ ] CSS variables are defined
-- [ ] No JavaScript errors in console
-- [ ] Theme switcher buttons work
-- [ ] Local storage saves preferences
-
----
-
-## 🚀 Deployment and Configuration
-
-### Step 1: Update tiddlywiki.info
-
-Add your theme to the configuration:
+Create `plugin.info` with **theme metadata**:
 
 ```json
 {
-    "tiddlers": [
-        {
-            "file": "tiddlers/your_theme.tid",
-            "fields": {
-                "title": "$:/themes/yourname/your-theme",
-                "type": "text/vnd.tiddlywiki",
-                "tags": "$:/tags/Theme"
-            }
-        },
-        {
-            "file": "tiddlers/theme_switcher.tid",
-            "fields": {
-                "title": "Theme Switcher",
-                "type": "text/vnd.tiddlywiki",
-                "tags": "theme switcher"
-            }
-        }
-    ]
+    "title": "$:/themes/your-theme-name",
+    "name": "Your Theme Display Name",
+    "author": "Your Name",
+    "core-version": ">=5.0.0",
+    "plugin-type": "theme",
+    "description": "Description of your theme",
+    "plugin-priority": "0"
 }
 ```
 
-### Step 2: Restart Server
+### Step 3: Copy Base Theme Structure
+
+**IMPORTANT**: Start by copying the complete vanilla theme structure:
 
 ```bash
-# Stop current server
-pkill -f "tiddlywiki.*--listen"
+# Copy all vanilla theme files
+cp /path/to/node_modules/tiddlywiki/themes/tiddlywiki/vanilla/* .
 
-# Start with new theme
-tiddlywiki docs/wiki --listen
+# Update all internal references
+sed -i 's|tiddlywiki/vanilla|your-theme-name|g' *.tid *.multids
 ```
 
----
+### Step 4: Customize base.tid
 
-## 🎨 Monokai Pro Example
-
-### Complete Theme Implementation
-
-Here's our complete Monokai Pro theme as a reference:
-
-#### 1. Theme Tiddler (`monokai_pro_theme.tid`)
-
-```tiddlywiki
-title: $:/themes/pmu/monokai-pro
-type: text/vnd.tiddlywiki
-tags: $:/tags/Theme
-description: Monokai Pro color scheme
-author: PMU Team
-version: 1.0.0
-
-!! Monokai Pro Theme
+Add your custom CSS to the end of `base.tid`:
 
 ```css
-/* Dark Theme Variables */
-.tc-theme-pmu-monokai-dark {
-    --monokai-bg: #2d2a2e;
-    --monokai-fg: #fce566;
-    --monokai-class: #a6e22e;
-    --monokai-function: #fd971f;
-    --monokai-string: #a8ff60;
-    --monokai-border: #75715e;
+/* ==== YOUR CUSTOM THEME COLORS ==== */
+
+html body.tc-body {
+    background-color: #your-bg-color !important;
+    color: #your-text-color !important;
 }
 
-/* Apply to body */
-body.tc-theme-pmu-monokai-dark {
-    background-color: var(--monokai-bg);
-    color: var(--monokai-fg);
+.tc-tiddler-frame {
+    background-color: #your-tiddler-bg !important;
+    border: 1px solid #your-border-color !important;
+    color: #your-text-color !important;
 }
 
-/* Content areas */
-.tc-theme-pmu-monokai-dark .tc-story-river {
-    background-color: var(--monokai-bg);
-    color: var(--monokai-fg);
+/* Icons - make them visible */
+.tc-image-button svg,
+.tc-btn-invisible svg,
+.tc-tiddler-controls svg {
+    fill: #your-icon-color !important;
+    stroke: #your-icon-color !important;
 }
 
-.tc-theme-pmu-monokai-dark .tc-tiddler-frame {
-    background-color: var(--monokai-bg);
-    color: var(--monokai-fg);
-    border: 1px solid var(--monokai-border);
+/* Buttons and interactions */
+button {
+    background-color: #your-button-bg !important;
+    color: #your-button-text !important;
+    border: 1px solid #your-button-border !important;
 }
 
-/* Headings */
-.tc-theme-pmu-monokai-dark h1, 
-.tc-theme-pmu-monokai-dark h2, 
-.tc-theme-pmu-monokai-dark h3 {
-    color: var(--monokai-class);
-    border-bottom: 2px solid var(--monokai-border);
+button:hover {
+    background-color: #your-button-hover !important;
+}
+
+/* Links */
+a.tc-tiddlylink:link, a.tc-tiddlylink:visited {
+    color: #your-link-color !important;
+}
+
+a.tc-tiddlylink:hover {
+    color: #your-link-hover !important;
+}
+
+/* Headers */
+h1, h2, h3, h4, h5, h6 {
+    color: #your-header-color !important;
+    border-bottom: 1px solid #your-border-color !important;
 }
 
 /* Code blocks */
-.tc-theme-pmu-monokai-dark code {
-    background-color: var(--monokai-selection);
-    color: var(--monokai-function);
-    border: 1px solid var(--monokai-border);
-    border-radius: 3px;
-    padding: 2px 4px;
+code {
+    background-color: #your-code-bg !important;
+    color: #your-code-text !important;
+    border: 1px solid #your-border-color !important;
+}
+
+/* Sidebar */
+.tc-sidebar-scrollable {
+    background-color: #your-sidebar-bg !important;
+    color: #your-sidebar-text !important;
+}
+
+/* Control panel and tabs */
+.tc-control-panel {
+    background-color: #your-panel-bg !important;
+    color: #your-panel-text !important;
+}
+
+.tc-tab-button {
+    background-color: #your-tab-bg !important;
+    color: #your-tab-text !important;
+    border: 1px solid #your-border-color !important;
+}
+
+.tc-tab-button.tc-tab-selected {
+    background-color: #your-tab-active-bg !important;
+    color: #your-tab-active-text !important;
 }
 ```
 
-#### 2. Theme Switcher (`theme_switcher.tid`)
+## 🌈 Palette Development
 
-```tiddlywiki
-title: Theme Switcher
-type: text/vnd.tiddlywiki
-tags: theme switcher monokai
+**⚠️ IMPORTANT**: Palettes must be created as **tiddlers**, not folders. Folder approach does NOT work for palettes.
 
-!! Monokai Pro Theme Switcher
+### Step 1: Create Palette Tiddler
 
-<div style="text-align: center; padding: 20px;">
-    <button onclick="switchToMonokaiDark()">🌙 Dark</button>
-    <button onclick="switchToMonokaiLight()">☀️ Light</button>
-</div>
+Create palette file in `docs/wiki/tiddlers/your_palette_name.tid`:
 
-<script>
-window.switchToMonokaiDark = function() {
-    document.body.classList.remove('tc-theme-pmu-monokai-light');
-    document.body.classList.add('tc-theme-pmu-monokai-dark');
-    localStorage.setItem('pmu-theme', 'dark');
-};
+```
+title: $:/palettes/your-palette-name
+name: Your Palette Display Name
+description: Description of your palette
+tags: $:/tags/Palette
+type: application/x-tiddler-dictionary
 
-window.switchToMonokaiLight = function() {
-    document.body.classList.remove('tc-theme-pmu-monokai-dark');
-    document.body.classList.add('tc-theme-pmu-monokai-light');
-    localStorage.setItem('pmu-theme', 'light');
-};
-
-// Auto-load saved theme
-window.addEventListener('load', function() {
-    const savedTheme = localStorage.getItem('pmu-theme') || 'dark';
-    if (savedTheme === 'light') {
-        window.switchToMonokaiLight();
-    } else {
-        window.switchToMonokaiDark();
-    }
-});
-</script>
+alert-background: #color
+alert-border: #color
+alert-highlight: #color
+alert-muted-foreground: #color
+background: #color
+blockquote-bar: #color
+button-background: #color
+button-foreground: #color
+button-border: #color
+code-background: #color
+code-border: #color
+code-foreground: #color
+foreground: #color
+message-background: #color
+message-border: #color
+message-foreground: #color
+modal-backdrop: #color
+modal-background: #color
+modal-border: #color
+page-background: #color
+pre-background: #color
+pre-border: #color
+primary: #color
+sidebar-foreground: #color
+sidebar-muted-foreground: #color
+sidebar-tab-background: #color
+sidebar-tab-background-selected: #color
+sidebar-tab-border: #color
+sidebar-tab-border-selected: #color
+sidebar-tab-foreground: #color
+sidebar-tab-foreground-selected: #color
+tiddler-background: #color
+tiddler-border: #color
+tiddler-controls-foreground: #color
+tiddler-controls-foreground-hover: #color
+tiddler-controls-foreground-selected: #color
+tiddler-link-background: #color
+tiddler-link-foreground: #color
+tiddler-subtitle-foreground: #color
+tiddler-title-foreground: #color
+toolbar-new-button: #color
+toolbar-options-button: #color
+toolbar-save-button: #color
+toolbar-edit-button: #color
+toolbar-close-button: #color
+toolbar-delete-button: #color
+toolbar-cancel-button: #color
+toolbar-done-button: #color
 ```
 
-#### 3. Configuration (`tiddlywiki.info`)
+### Step 2: Monokai Pro Palette Examples
+
+**Monokai Pro Dark Palette** (`docs/wiki/tiddlers/monokai_pro_dark_palette.tid`):
+
+```
+title: $:/palettes/monokai-pro-dark
+name: Monokai Pro Dark
+description: Dark color palette inspired by Monokai Pro
+tags: $:/tags/Palette
+type: application/x-tiddler-dictionary
+
+alert-background: #2d2a2e
+alert-border: #75715e
+alert-highlight: #49483e
+alert-muted-foreground: #75715e
+background: #2d2a2e
+blockquote-bar: #a6e22e
+button-background: #49483e
+button-foreground: #fcfcfa
+button-border: #75715e
+code-background: #49483e
+code-border: #75715e
+code-foreground: #fd971f
+foreground: #fcfcfa
+message-background: #49483e
+message-border: #75715e
+message-foreground: #fcfcfa
+modal-backdrop: #222023
+modal-background: #2d2a2e
+modal-border: #75715e
+page-background: #2d2a2e
+pre-background: #49483e
+pre-border: #75715e
+primary: #a9dc76
+sidebar-foreground: #fcfcfa
+sidebar-muted-foreground: #75715e
+sidebar-tab-background: #2d2a2e
+sidebar-tab-background-selected: #49483e
+sidebar-tab-border: #75715e
+sidebar-tab-border-selected: #a6e22e
+sidebar-tab-foreground: #fcfcfa
+sidebar-tab-foreground-selected: #fcfcfa
+tiddler-background: #2d2a2e
+tiddler-border: #75715e
+tiddler-controls-foreground: #fcfcfa
+tiddler-controls-foreground-hover: #a6e22e
+tiddler-controls-foreground-selected: #a9dc76
+tiddler-link-background: #2d2a2e
+tiddler-link-foreground: #78dce8
+tiddler-subtitle-foreground: #75715e
+tiddler-title-foreground: #a6e22e
+toolbar-new-button: #a6e22e
+toolbar-options-button: #78dce8
+toolbar-save-button: #a9dc76
+toolbar-edit-button: #fd971f
+toolbar-close-button: #f92672
+toolbar-delete-button: #f92672
+toolbar-cancel-button: #75715e
+toolbar-done-button: #a6e22e
+```
+
+**Monokai Pro Light Palette** (`docs/wiki/tiddlers/monokai_pro_light_palette.tid`):
+
+```
+title: $:/palettes/monokai-pro-light
+name: Monokai Pro Light
+description: Light color palette inspired by Monokai Pro
+tags: $:/tags/Palette
+type: application/x-tiddler-dictionary
+
+alert-background: #fafafa
+alert-border: #e1e4e8
+alert-highlight: #f6f8fa
+alert-muted-foreground: #586069
+background: #fafafa
+blockquote-bar: #0366d6
+button-background: #f6f8fa
+button-foreground: #2d2a2e
+button-border: #e1e4e8
+code-background: #f6f8fa
+code-border: #e1e4e8
+code-foreground: #d73a49
+foreground: #2d2a2e
+message-background: #f6f8fa
+message-border: #e1e4e8
+message-foreground: #2d2a2e
+modal-backdrop: #d1d5da
+modal-background: #fafafa
+modal-border: #e1e4e8
+page-background: #fafafa
+pre-background: #f6f8fa
+pre-border: #e1e4e8
+primary: #0366d6
+sidebar-foreground: #2d2a2e
+sidebar-muted-foreground: #586069
+sidebar-tab-background: #fafafa
+sidebar-tab-background-selected: #f6f8fa
+sidebar-tab-border: #e1e4e8
+sidebar-tab-border-selected: #0366d6
+sidebar-tab-foreground: #2d2a2e
+sidebar-tab-foreground-selected: #2d2a2e
+tiddler-background: #fafafa
+tiddler-border: #e1e4e8
+tiddler-controls-foreground: #2d2a2e
+tiddler-controls-foreground-hover: #0366d6
+tiddler-controls-foreground-selected: #0366d6
+tiddler-link-background: #fafafa
+tiddler-link-foreground: #0366d6
+tiddler-subtitle-foreground: #586069
+tiddler-title-foreground: #6f42c1
+toolbar-new-button: #28a745
+toolbar-options-button: #0366d6
+toolbar-save-button: #28a745
+toolbar-edit-button: #f4bf75
+toolbar-close-button: #cb2431
+toolbar-delete-button: #cb2431
+toolbar-cancel-button: #586069
+toolbar-done-button: #28a745
+```
+
+## ⚠️ Critical Configuration
+
+### tiddlywiki.info Setup
+
+**IMPORTANT**: Do **NOT** register custom themes/palettes in `tiddlywiki.info`!
 
 ```json
 {
-    "tiddlers": [
-        {
-            "file": "tiddlers/monokai_pro_theme.tid",
-            "fields": {
-                "title": "$:/themes/pmu/monokai-pro",
-                "type": "text/vnd.tiddlywiki",
-                "tags": "$:/tags/Theme"
-            }
-        },
-        {
-            "file": "tiddlers/theme_switcher.tid",
-            "fields": {
-                "title": "Theme Switcher",
-                "type": "text/vnd.tiddlywiki",
-                "tags": "theme switcher monokai"
-            }
-        }
+    "plugins": [
+        "tiddlywiki/tiddlyweb",
+        "tiddlywiki/filesystem",
+        "tiddlywiki/highlight",
+        "tiddlywiki/markdown"
+    ],
+    "themes": [
+        "tiddlywiki/vanilla",
+        "tiddlywiki/snowwhite"
     ]
 }
 ```
 
----
+**Only list official themes** - TiddlyWiki will **auto-discover** your custom themes and palettes!
 
-## 📚 Best Practices
+## 🚀 Testing & Development
 
-### 1. Naming Conventions
+### Start TiddlyWiki Server
 
-- **Theme tiddlers**: `$:/themes/yourname/theme-name`
-- **CSS classes**: `tc-theme-yourname-theme-variant`
-- **Files**: `your_theme.tid`, `theme_switcher.tid`
+```bash
+# Start server (use the provided start script)
+./docs/wiki/start.sh
 
-### 2. CSS Organization
+# Or manually
+cd docs/wiki && tiddlywiki . --listen
+```
+
+### Access Control Panel
+
+1. Open http://127.0.0.1:8080
+2. Click the ⚙️ **Control Panel** icon
+3. Go to **Appearance** tab
+4. Select **Theme** or **Palette** tab
+5. Your custom themes/palettes should be **automatically discovered**!
+
+### Development Workflow
+
+```bash
+# 1. Make changes to theme/palette files
+# 2. Save files
+# 3. Refresh browser to see changes
+# 4. Clean up temporary files periodically
+./cleanup_storylist.sh
+```
+
+## 🧹 Maintenance & Utilities
+
+### Cleanup Script Usage
+
+```bash
+# From project root
+./cleanup_tiddly.sh
+
+# From wiki directory
+cd docs/wiki && ./cleanup_storylist.sh
+```
+
+**What it cleans:**
+- Removes `$__StoryList_1.tid`, `$__StoryList_2.tid`, etc.
+- Preserves main `$__StoryList.tid`
+- Prevents git commit clutter
+
+## 🐛 Troubleshooting
+
+### Common Issues & Solutions
+
+| Issue | Symptoms | Solution |
+|-------|----------|----------|
+| **Themes not visible** | Control panel shows only default themes | Check `themes/` directory structure and `plugin.info` syntax |
+| **No styling applied** | Theme loads but looks like plain HTML | Verify `base.tid` exists and contains CSS, check for syntax errors |
+| **Plugin warnings** | `Cannot find plugin` errors in terminal | Remove custom themes from `tiddlywiki.info` - let auto-discovery work |
+| **Icons invisible** | Dark themes show no icons | Add SVG fill/stroke rules in CSS |
+| **Palettes not visible** | Control panel shows no custom palettes | Create palettes as **tiddlers** in `tiddlers/` folder, not as folders |
+| **Palette folders don't work** | Created palette folders but they don't appear | Delete palette folders, create `.tid` files in `tiddlers/` instead |
+| **JSON syntax error** | `invalid JSON in tiddlywiki.info` | Validate JSON syntax, check for trailing commas |
+
+### Debug Steps
+
+1. **Check file structure**:
+   ```bash
+   # For themes (folder structure)
+   find themes/ -name "*.tid" -o -name "*.info"
+   
+   # For palettes (tiddler files)
+   find tiddlers/ -name "*palette*.tid"
+   ```
+
+2. **Validate plugin.info JSON**:
+   ```bash
+   cat themes/your-theme/plugin.info | python -m json.tool
+   ```
+
+3. **Check palette tiddler format**:
+   ```bash
+   head -10 tiddlers/your_palette.tid
+   ```
+
+4. **Check TiddlyWiki startup log** for warnings
+
+5. **Browser console** for CSS/JavaScript errors
+
+## 🎨 Color Guidelines
+
+### Monokai Pro Dark Example
+- Background: `#2d2a2e` (deep dark)
+- Text: `#fcfcfa` (soft white)  
+- Primary: `#a9dc76` (green)
+- Links: `#78dce8` (cyan)
+- Borders: `#75715e` (muted brown)
+
+### Monokai Pro Light Example  
+- Background: `#fafafa` (light gray)
+- Text: `#2d2a2e` (dark)
+- Primary: `#0366d6` (blue)
+- Links: `#0366d6` (blue)
+- Borders: `#e1e4e8` (light gray)
+
+## 📚 Advanced Topics
+
+### Theme Inheritance
+
+Themes inherit from vanilla base structure. Always start with:
+1. Copy complete vanilla theme files
+2. Update internal references
+3. Add custom CSS on top
+
+### Responsive Design
 
 ```css
-/* 1. Variables first */
-.your-theme {
-    --color-primary: #value;
-}
-
-/* 2. Body styling */
-body.your-theme {
-    /* body styles */
-}
-
-/* 3. Content areas */
-.your-theme .tc-story-river {
-    /* content styles */
-}
-
-/* 4. Specific elements */
-.your-theme .tc-tiddler-frame {
-    /* tiddler styles */
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+    .tc-tiddler-frame {
+        margin: 5px !important;
+    }
 }
 ```
 
-### 3. JavaScript Patterns
+### Dark/Light Theme Variants
 
-```javascript
-// Always use classList for better control
-document.body.classList.remove('old-theme');
-document.body.classList.add('new-theme');
+Create matching palette + theme combinations:
+- `monokai-pro-dark` theme + `monokai-pro-dark` palette
+- `monokai-pro-light` theme + `monokai-pro-light` palette
 
-// Save preferences
-localStorage.setItem('theme-preference', 'theme-name');
+## 🎯 Success Metrics
 
-// Load on page load
-window.addEventListener('load', function() {
-    // Load saved theme
-});
-```
+Your theme and palette development is successful when:
 
-### 4. Testing Strategy
+**Themes:**
+✅ **Auto-discovery works** - themes appear in Control Panel  
+✅ **No plugin warnings** - clean terminal startup  
+✅ **Proper styling** - themes apply correctly when selected  
+✅ **Icons visible** - dark themes show all UI elements  
+✅ **Clean JSON** - no tiddlywiki.info errors  
+✅ **Responsive design** - works on different screen sizes  
 
-1. **Test in multiple browsers**
-2. **Check mobile responsiveness**
-3. **Verify accessibility** (color contrast)
-4. **Test with different content types**
-5. **Validate CSS syntax**
+**Palettes:**
+✅ **Palettes appear** - custom palettes visible in Appearance > Palette  
+✅ **Colors apply** - selecting palette changes wiki colors  
+✅ **Tiddler format** - palette saved as `.tid` file in `tiddlers/`  
+✅ **Proper tags** - includes `$:/tags/Palette` tag  
+✅ **Dictionary type** - uses `application/x-tiddler-dictionary` format  
+
+## 📖 Resources
+
+- **This implementation**: Working Monokai Pro Dark/Light themes
+- **TiddlyWiki Docs**: https://tiddlywiki.com/static/Themes.html
+- **CSS Reference**: MDN Web Docs
+- **Color Tools**: Coolors.co, Adobe Color
 
 ---
 
-## 🎯 Quick Start Template
-
-Use this template to create your own theme:
-
-```tiddlywiki
-title: $:/themes/yourname/your-theme
-type: text/vnd.tiddlywiki
-tags: $:/tags/Theme
-description: Your theme description
-author: Your Name
-version: 1.0.0
-
-!! Your Theme Name
-
-```css
-/* Your theme CSS here */
-.your-theme {
-    --bg-primary: #your-color;
-    --text-primary: #your-color;
-}
-
-body.your-theme {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-}
-```
-```
-
----
-
-## 📖 Additional Resources
-
-- [TiddlyWiki Official Documentation](https://tiddlywiki.com/)
-- [CSS Custom Properties Guide](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-- [Color Palette Generators](https://coolors.co/)
-- [CSS Grid and Flexbox](https://css-tricks.com/snippets/css/complete-guide-grid/)
-
----
-
-## 🏆 Summary
-
-Creating themes in TiddlyWiki involves:
-
-1. **Planning** your color palette and design
-2. **Creating** theme tiddler with CSS
-3. **Building** theme switcher with JavaScript
-4. **Configuring** in `tiddlywiki.info`
-5. **Testing** and debugging
-6. **Deploying** and maintaining
-
-The Monokai Pro theme demonstrates all these steps in practice, providing a beautiful, functional theme that enhances the documentation experience.
-
-Remember: **Good themes focus on readability and usability first, aesthetics second!** 🎨
+*This guide is based on successful implementation of complex folder-structured themes and palettes in TiddlyWiki 5.x*

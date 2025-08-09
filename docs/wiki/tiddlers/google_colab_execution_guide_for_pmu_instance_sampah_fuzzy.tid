@@ -2,12 +2,12 @@ title: Google Colab Execution Guide for PMU Instance Sampah Fuzzy
 type: text/markdown
 tags: yolo training inference onnx rknn troubleshooting deployment configuration documentation guide reference git cuda python structure docs documentation
 created: 20250807170027
-modified: 20250807170027
+modified: 20250807220000
 source: docs/COLAB_EXECUTION_GUIDE.md
 
 # Google Colab Execution Guide for PMU Instance Sampah Fuzzy
 
-This guide provides step-by-step instructions for executing the waste detection system on Google Colab.
+This guide provides step-by-step instructions for executing the waste detection system on Google Colab, updated to align with `requirements-dev-linux-rknn-local.txt` and use the specific RKNN Toolkit2 wheel from GitHub.
 
 ## 📋 Prerequisites
 
@@ -40,26 +40,130 @@ Run this cell to clone your repository:
 !ls -la
 ```
 
-### Step 3: Install Dependencies
+### Step 3: Install Dependencies (Updated)
 
-Install all required packages:
+Install all required packages aligned with `requirements-dev-linux-rknn-local.txt`:
 
 ```python
-# Install required packages
-!pip install ultralytics
-!pip install roboflow
-!pip install opencv-python
-!pip install matplotlib
-!pip install seaborn
-!pip install pandas
-!pip install numpy
-!pip install PyYAML
-!pip install scikit-fuzzy
-!pip install tensorboard
+# Core dependencies from requirements file
+core_deps = [
+    "ultralytics==8.3.174",
+    "roboflow==1.2.3", 
+    "opencv-python==4.11.0.86",
+    "matplotlib==3.10.5",
+    "seaborn==0.13.2",
+    "pandas==2.3.1",
+    "numpy==1.26.4",
+    "PyYAML==6.0.2",
+    "scikit-fuzzy==0.5.0",
+    "tensorboard==2.20.0",
+    "onnx==1.18.0",
+    "onnxruntime==1.22.1",
+    "torch==2.4.0+cu124",
+    "torchvision==0.19.0+cu124",
+    "torchaudio==2.4.0+cu124",
+    "pillow==11.3.0",
+    "requests==2.32.4",
+    "python-dotenv==1.1.1",
+    "tqdm==4.67.1",
+    "protobuf==4.25.4",
+    "flatbuffers==25.2.10",
+    "filelock==3.13.1",
+    "psutil==7.0.0",
+    "scipy==1.16.1",
+    "networkx==3.3",
+    "kiwisolver==1.4.8",
+    "cycler==0.12.1",
+    "contourpy==1.3.3",
+    "fonttools==4.59.0",
+    "markdown==3.8.2",
+    "jinja2==3.1.4",
+    "packaging==25.0",
+    "python-dateutil==2.9.0.post0",
+    "pytz==2025.2",
+    "six==1.17.0",
+    "urllib3==2.5.0",
+    "certifi==2025.8.3",
+    "charset-normalizer==3.4.2",
+    "idna==3.7",
+    "typing_extensions==4.12.2",
+    "sympy==1.13.3",
+    "mpmath==1.3.0",
+    "fsspec==2024.6.1",
+    "gitdb==4.0.12",
+    "GitPython==3.1.45",
+    "smmap==5.0.2",
+    "grpcio==1.74.0",
+    "absl-py==2.3.1",
+    "antlr4-python3-runtime==4.9.3",
+    "asttokens==3.0.0",
+    "coloredlogs==15.0.1",
+    "decorator==5.2.1",
+    "executing==2.2.0",
+    "fast-histogram==0.14",
+    "filetype==1.2.0",
+    "humanfriendly==10.0",
+    "hydra-core==1.3.2",
+    "ipython==9.4.0",
+    "ipython_pygments_lexers==1.1.1",
+    "jedi==0.19.2",
+    "markupsafe==2.1.5",
+    "matplotlib-inline==0.1.7",
+    "omegaconf==2.3.0",
+    "parso==0.8.4",
+    "pexpect==4.9.0",
+    "pi_heif==1.1.0",
+    "pillow-avif-plugin==1.5.2",
+    "prompt_toolkit==3.0.51",
+    "ptyprocess==0.7.0",
+    "pure_eval==0.2.3",
+    "py-cpuinfo==9.0.0",
+    "pygments==2.19.2",
+    "pyparsing==3.2.3",
+    "requests-toolbelt==1.0.0",
+    "ruamel.yaml==0.18.14",
+    "ruamel.yaml.clib==0.2.12",
+    "stack-data==0.6.3",
+    "tensorboard-data-server==0.7.2",
+    "thop==0.1.1.post2209072238",
+    "triton==3.0.0",
+    "tzdata==2025.2",
+    "ultralytics-thop==2.0.15",
+    "wcwidth==0.2.13",
+    "werkzeug==3.1.3"
+]
 
-# Install additional dependencies for RKNN conversion (optional)
-!pip install onnx
-!pip install onnxruntime
+# Install core dependencies
+print("📦 Installing core dependencies...")
+for dep in core_deps:
+    !pip install {dep}
+
+# Install CUDA dependencies for GPU support
+cuda_deps = [
+    "nvidia-cublas-cu12==12.4.2.65",
+    "nvidia-cuda-cupti-cu12==12.4.99",
+    "nvidia-cuda-nvrtc-cu12==12.4.99",
+    "nvidia-cuda-runtime-cu12==12.4.99",
+    "nvidia-cudnn-cu12==9.1.0.70",
+    "nvidia-cufft-cu12==11.2.0.44",
+    "nvidia-curand-cu12==10.3.5.119",
+    "nvidia-cusolver-cu12==11.6.0.99",
+    "nvidia-cusparse-cu12==12.3.0.142",
+    "nvidia-nccl-cu12==2.20.5",
+    "nvidia-nvjitlink-cu12==12.4.99",
+    "nvidia-nvtx-cu12==12.4.99"
+]
+
+print("🚀 Installing CUDA dependencies...")
+for dep in cuda_deps:
+    !pip install {dep}
+
+# Install RKNN Toolkit2 from GitHub wheel
+print("📦 Installing RKNN Toolkit2 from GitHub...")
+rknn_wheel_url = "https://github.com/airockchip/rknn-toolkit2/raw/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+!pip install {rknn_wheel_url}
+
+print("✅ All dependencies installed successfully!")
 ```
 
 ### Step 4: Mount Google Drive (Optional but Recommended)
@@ -111,6 +215,16 @@ if os.path.exists('config.yaml'):
     with open('config.yaml', 'r') as f:
         print("\nConfiguration file contents:")
         print(f.read())
+
+# Verify key dependencies
+try:
+    import ultralytics
+    import roboflow
+    import torch
+    import onnx
+    print("✅ Key dependencies verified")
+except ImportError as e:
+    print(f"❌ Missing dependency: {e}")
 ```
 
 ### Step 7: Import and Initialize the System
@@ -248,17 +362,20 @@ except Exception as e:
     print(f"❌ YOLOv11n training failed: {e}")
 ```
 
-### Step 14: Convert to RKNN Models (Optional)
+### Step 14: Convert to RKNN Models (Updated)
 
-Convert models to RKNN format for edge deployment:
+Convert models to RKNN format for edge deployment using the GitHub wheel:
 
 ```python
 # Convert to RKNN models
 try:
     system.convert_and_zip_rknn_models("v8n")
     print("✅ RKNN conversion completed for YOLOv8n!")
+    print("📦 RKNN Toolkit2 installed from GitHub wheel")
+    print("🔗 Source: https://github.com/airockchip/rknn-toolkit2")
 except Exception as e:
     print(f"❌ RKNN conversion failed: {e}")
+    print("⚠️  RKNN conversion is optional. ONNX models are still available.")
 ```
 
 ### Step 15: Save Results to Google Drive
@@ -359,6 +476,18 @@ print(f"CUDA available: {torch.cuda.is_available()}")
 print(f"GPU count: {torch.cuda.device_count()}")
 ```
 
+#### 5. **RKNN Toolkit2 Issues**
+```python
+# Check RKNN installation
+try:
+    import rknn_toolkit2
+    print("✅ RKNN Toolkit2 installed successfully")
+except ImportError:
+    print("❌ RKNN Toolkit2 not installed")
+    print("Installing from GitHub...")
+    !pip install https://github.com/airockchip/rknn-toolkit2/raw/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+```
+
 ## 📈 Performance Optimization Tips
 
 ### For Faster Training:
@@ -373,17 +502,20 @@ print(f"GPU count: {torch.cuda.device_count()}")
 3. **Use Data Augmentation**: Enable in training configuration
 4. **Monitor Metrics**: Use TensorBoard for real-time monitoring
 
-## 🎯 Quick Start Script
+## 🎯 Quick Start Script (Updated)
 
-For experienced users, here's a quick execution script:
+For experienced users, here's a quick execution script with updated dependencies:
 
 ```python
-# Quick execution script
+# Quick execution script with updated dependencies
 !git clone https://github.com/trisgelar/pmu-instance-sampah-fuzzy.git
 %cd pmu-instance-sampah-fuzzy
 
-# Install dependencies
-!pip install ultralytics roboflow opencv-python matplotlib seaborn pandas numpy PyYAML scikit-fuzzy tensorboard
+# Install dependencies from requirements file
+!pip install ultralytics==8.3.174 roboflow==1.2.3 opencv-python==4.11.0.86 matplotlib==3.10.5 seaborn==0.13.2 pandas==2.3.1 numpy==1.26.4 PyYAML==6.0.2 scikit-fuzzy==0.5.0 tensorboard==2.20.0 onnx==1.18.0 onnxruntime==1.22.1 torch==2.4.0+cu124 torchvision==0.19.0+cu124 torchaudio==2.4.0+cu124 pillow==11.3.0 requests==2.32.4 python-dotenv==1.1.1 tqdm==4.67.1 protobuf==4.25.4 flatbuffers==25.2.10 filelock==3.13.1 psutil==7.0.0 scipy==1.16.1 networkx==3.3
+
+# Install RKNN Toolkit2 from GitHub
+!pip install https://github.com/airockchip/rknn-toolkit2/raw/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 
 # Mount Drive
 from google.colab import drive
@@ -408,9 +540,30 @@ run_dir = system.train_and_export_model("v8n", epochs=50, batch_size=16)
 if run_dir:
     system.analyze_training_run(run_dir, "v8n")
     system.run_inference_and_visualization(run_dir, "v8n", num_inference_images=6)
+    
+    # Try RKNN conversion
+    try:
+        system.convert_and_zip_rknn_models("v8n")
+        print("✅ RKNN conversion completed!")
+    except Exception as e:
+        print(f"⚠️  RKNN conversion failed: {e}")
 
 print("✅ Training completed successfully!")
 ```
+
+## 🔗 RKNN Toolkit2 Information
+
+### Source:
+- **GitHub Repository**: [https://github.com/airockchip/rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2)
+- **Wheel File**: `rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl`
+- **Direct URL**: [https://github.com/airockchip/rknn-toolkit2/blob/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl](https://github.com/airockchip/rknn-toolkit2/blob/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl)
+
+### Features:
+- **Python 3.11 Support**: Compatible with Python 3.11
+- **ManyLinux2014**: Optimized for Linux distributions
+- **x86_64 Architecture**: For 64-bit systems
+- **CUDA Support**: GPU acceleration for model conversion
+- **Edge Deployment**: Convert models for Rockchip devices
 
 ## 📞 Support
 
@@ -421,6 +574,7 @@ If you encounter issues:
 3. **Check Dependencies**: Verify all packages are installed
 4. **Monitor Resources**: Ensure sufficient GPU memory and storage
 5. **Review Documentation**: Check the main README.md for additional details
+6. **RKNN Issues**: Check the [RKNN Toolkit2 GitHub repository](https://github.com/airockchip/rknn-toolkit2) for updates
 
 ## 🔗 Additional Resources
 
@@ -428,9 +582,10 @@ If you encounter issues:
 - **API Reference**: See `docs/API_REFERENCE.md`
 - **Deployment Guide**: See `docs/DEPLOYMENT_GUIDE.md`
 - **Troubleshooting**: See `docs/` for additional guides
+- **RKNN Toolkit2**: [https://github.com/airockchip/rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2)
 
 ---
 
 **Happy Training! 🚀**
 
-*This guide is designed to help you successfully execute the waste detection system on Google Colab. Follow each step carefully and ensure all prerequisites are met before starting.* 
+*This guide is designed to help you successfully execute the waste detection system on Google Colab with updated dependencies and RKNN Toolkit2 support. Follow each step carefully and ensure all prerequisites are met before starting.* 

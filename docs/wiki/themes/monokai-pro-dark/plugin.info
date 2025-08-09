@@ -1,0 +1,9 @@
+{
+    "title": "$:/themes/monokai-pro-dark",
+    "name": "Monokai Pro Dark",
+    "author": "PMU Team",
+    "core-version": ">=5.0.0",
+    "plugin-type": "theme",
+    "description": "Monokai Pro Dark theme for PMU Instance Sampah Fuzzy",
+    "plugin-priority": "0"
+}

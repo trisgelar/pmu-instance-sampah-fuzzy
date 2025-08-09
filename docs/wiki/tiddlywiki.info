@@ -6,10 +6,10 @@
         "tiddlywiki/highlight",
         "tiddlywiki/markdown"
     ],
-    "themes": [
-        "tiddlywiki/vanilla",
-        "tiddlywiki/snowwhite"
-    ],
+            "themes": [
+            "tiddlywiki/vanilla",
+            "tiddlywiki/snowwhite"
+        ],
     "tiddlers": [
         {
             "file": "tiddlers/pipeline_scripts_guide.tid",
@@ -76,19 +76,59 @@
             }
         },
         {
-            "file": "tiddlers/theme_switcher.tid",
-            "fields": {
-                "title": "Theme Switcher",
-                "type": "text/vnd.tiddlywiki",
-                "tags": "theme switcher monokai"
-            }
-        },
-        {
             "file": "tiddlers/tiddlywiki_theme_development_guide.tid",
             "fields": {
                 "title": "TiddlyWiki Theme Development Guide",
                 "type": "text/markdown",
                 "tags": "theme development tiddlywiki documentation tutorial"
+            }
+        },
+        {
+            "file": "tiddlers/monokai_pro_dark_theme.tid",
+            "fields": {
+                "title": "$:/themes/pmu/monokai-pro-dark",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "$:/tags/Theme"
+            }
+        },
+        {
+            "file": "tiddlers/monokai_pro_light_theme.tid",
+            "fields": {
+                "title": "$:/themes/pmu/monokai-pro-light",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "$:/tags/Theme"
+            }
+        },
+        {
+            "file": "tiddlers/Monokai Pro Dark.tid",
+            "fields": {
+                "title": "$:/palettes/Monokai Pro Dark",
+                "type": "application/x-tiddler-dictionary",
+                "tags": "$:/tags/Palette"
+            }
+        },
+        {
+            "file": "tiddlers/Monokai Pro Light.tid",
+            "fields": {
+                "title": "$:/palettes/Monokai Pro Light",
+                "type": "application/x-tiddler-dictionary",
+                "tags": "$:/tags/Palette"
+            }
+        },
+        {
+            "file": "tiddlers/theme_switching_guide.tid",
+            "fields": {
+                "title": "Theme Switching Guide",
+                "type": "text/vnd.tiddlywiki",
+                "tags": "theme guide documentation"
+            }
+        },
+        {
+            "file": "tiddlers/google_colab_execution_guide_for_pmu_instance_sampah_fuzzy.tid",
+            "fields": {
+                "title": "Google Colab Execution Guide for PMU Instance Sampah Fuzzy",
+                "type": "text/markdown",
+                "tags": "yolo training inference onnx rknn troubleshooting deployment configuration documentation guide reference git cuda python structure docs documentation"
             }
         }
     ],
