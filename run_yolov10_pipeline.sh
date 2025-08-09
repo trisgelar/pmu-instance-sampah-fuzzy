@@ -26,13 +26,49 @@
 #   ./run_yolov10_pipeline.sh complete_pipeline
 # =============================================================================
 
-# Configuration
+# =============================================================================
+# EXECUTION MODE CONFIGURATION
+# =============================================================================
+# Detect execution environment and set appropriate parameters
+# LOCAL MODE  (RTX 3050): Light training with 10 epochs for quick testing
+# COLAB MODE  (High GPU): Full training with 200 epochs for production
+
+# Function to detect execution environment
+detect_environment() {
+    if [[ -n "$COLAB_GPU" ]] || [[ -n "$COLAB_TPU_ADDR" ]] || [[ "$(hostname)" =~ colab ]] || [[ -f "/content" ]]; then
+        echo "colab"
+    else
+        echo "local"
+    fi
+}
+
+# Set environment-specific configuration
+EXEC_MODE=$(detect_environment)
+
+if [[ "$EXEC_MODE" == "colab" ]]; then
+    # COLAB CONFIGURATION - High GPU resources
+    DEFAULT_EPOCHS=200
+    DEFAULT_BATCH_SIZE=32
+    DEFAULT_IMAGE_SIZE=640
+    SAVE_TO_DRIVE=true
+    print_header "🚀 GOOGLE COLAB MODE DETECTED - HIGH PERFORMANCE TRAINING"
+    print_status "GPU: Tesla T4/V100/A100 - Training with $DEFAULT_EPOCHS epochs"
+else
+    # LOCAL CONFIGURATION - RTX 3050 laptop
+    DEFAULT_EPOCHS=10
+    DEFAULT_BATCH_SIZE=8
+    DEFAULT_IMAGE_SIZE=512
+    SAVE_TO_DRIVE=false
+    print_header "💻 LOCAL DEVELOPMENT MODE DETECTED - RTX 3050 OPTIMIZATION"
+    print_status "GPU: RTX 3050 - Quick training with $DEFAULT_EPOCHS epochs"
+fi
+
+# Configuration (can be overridden by command line or manual edit)
 MODEL_VERSION="v10n"  # Change to v10s, v10m, v10l, v10x as needed
-EPOCHS=50
-BATCH_SIZE=16
-IMAGE_SIZE=640
+EPOCHS=${EPOCHS:-$DEFAULT_EPOCHS}  # Use env var or default
+BATCH_SIZE=${BATCH_SIZE:-$DEFAULT_BATCH_SIZE}  # Use env var or default
+IMAGE_SIZE=${IMAGE_SIZE:-$DEFAULT_IMAGE_SIZE}  # Use env var or default
 DATASET_PATH="datasets"
-SAVE_TO_DRIVE=true
 
 # Colors for output
 RED='\033[0;31m'
@@ -46,6 +82,14 @@ NC='\033[0m' # No Color
 # Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_mode() {
+    if [[ "$EXEC_MODE" == "colab" ]]; then
+        echo -e "${CYAN}[COLAB]${NC} $1"
+    else
+        echo -e "${YELLOW}[LOCAL]${NC} $1"
+    fi
 }
 
 print_success() {
@@ -102,17 +146,24 @@ check_prerequisites() {
 # Function to run training scenario
 run_train_new() {
     print_header "YOLOv10 TRAINING NEW MODEL"
+    print_mode "Execution Mode: $EXEC_MODE"
     print_status "Model: $MODEL_VERSION"
-    print_status "Epochs: $EPOCHS"
+    print_status "Epochs: $EPOCHS (${EXEC_MODE} optimized)"
     print_status "Batch Size: $BATCH_SIZE"
     print_status "Image Size: $IMAGE_SIZE"
     
+    if [[ "$EXEC_MODE" == "local" ]]; then
+        print_warning "LOCAL MODE: Using reduced epochs ($EPOCHS) for RTX 3050"
+        print_warning "For full training, use Google Colab with 200 epochs"
+    else
+        print_success "COLAB MODE: Using full epochs ($EPOCHS) for production training"
+    fi
+    
     python main_colab.py \
-        --model $MODEL_VERSION \
+        --models $MODEL_VERSION \
         --epochs $EPOCHS \
         --batch-size $BATCH_SIZE \
-        --image-size $IMAGE_SIZE \
-        --save-to-drive $SAVE_TO_DRIVE
+        $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
 }
 
 # Function to use existing training results
@@ -122,9 +173,8 @@ run_use_existing() {
     print_status "Looking for existing training results..."
     
     python main_colab.py \
-        --model $MODEL_VERSION \
-        --use-existing-results \
-        --save-to-drive $SAVE_TO_DRIVE
+        --models $MODEL_VERSION \
+        $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
 }
 
 # Function to run complete pipeline
@@ -134,12 +184,11 @@ run_complete_pipeline() {
     print_status "This will train (if needed), analyze, infer, and convert to RKNN"
     
     python main_colab.py \
-        --model $MODEL_VERSION \
+        --models $MODEL_VERSION \
         --epochs $EPOCHS \
         --batch-size $BATCH_SIZE \
-        --image-size $IMAGE_SIZE \
         --complete-pipeline \
-        --save-to-drive $SAVE_TO_DRIVE
+        $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
 }
 
 # Function to run safe pipeline
@@ -149,12 +198,10 @@ run_safe_pipeline() {
     print_status "This skips problematic inference visualization"
     
     python main_colab.py \
-        --model $MODEL_VERSION \
+        --models $MODEL_VERSION \
         --epochs $EPOCHS \
         --batch-size $BATCH_SIZE \
-        --image-size $IMAGE_SIZE \
-        --safe-pipeline \
-        --save-to-drive $SAVE_TO_DRIVE
+        $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
 }
 
 # Function to export ONNX from existing model
@@ -164,9 +211,9 @@ run_onnx_export() {
     print_status "Exporting ONNX from existing PyTorch model..."
     
     python main_colab.py \
-        --model $MODEL_VERSION \
+        --models $MODEL_VERSION \
         --onnx-export \
-        --save-to-drive $SAVE_TO_DRIVE
+        $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
 }
 
 # Function to run analysis only
@@ -175,10 +222,9 @@ run_analysis_only() {
     print_status "Model: $MODEL_VERSION"
     print_status "Running analysis on existing training results..."
     
-    python main_colab.py \
-        --model $MODEL_VERSION \
-        --analysis-only \
-        --save-to-drive $SAVE_TO_DRIVE
+    print_warning "Analysis-only mode not supported in main_colab.py"
+    print_status "Use complete_pipeline or onnx_export instead"
+    return 1
 }
 
 # Function to run inference only
@@ -187,10 +233,9 @@ run_inference_only() {
     print_status "Model: $MODEL_VERSION"
     print_status "Running inference and visualization..."
     
-    python main_colab.py \
-        --model $MODEL_VERSION \
-        --inference-only \
-        --save-to-drive $SAVE_TO_DRIVE
+    print_warning "Inference-only mode not supported in main_colab.py"
+    print_status "Use complete_pipeline instead"
+    return 1
 }
 
 # Function to run RKNN conversion only
@@ -199,10 +244,9 @@ run_rknn_only() {
     print_status "Model: $MODEL_VERSION"
     print_status "Converting to RKNN format..."
     
-    python main_colab.py \
-        --model $MODEL_VERSION \
-        --rknn-only \
-        --save-to-drive $SAVE_TO_DRIVE
+    print_warning "RKNN-only mode not supported in main_colab.py"
+    print_status "Use complete_pipeline instead"
+    return 1
 }
 
 # Function to run all YOLOv10 variants
@@ -215,12 +259,11 @@ run_all_models() {
     for model in "${models[@]}"; do
         print_status "Processing YOLO$model..."
         python main_colab.py \
-            --model $model \
+            --models $model \
             --epochs $EPOCHS \
             --batch-size $BATCH_SIZE \
-            --image-size $IMAGE_SIZE \
             --complete-pipeline \
-            --save-to-drive $SAVE_TO_DRIVE
+            $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
     done
 }
 
@@ -241,17 +284,18 @@ run_custom() {
     print_status "  Image Size: $CUSTOM_IMAGE_SIZE"
     
     python main_colab.py \
-        --model $MODEL_VERSION \
+        --models $MODEL_VERSION \
         --epochs $CUSTOM_EPOCHS \
         --batch-size $CUSTOM_BATCH_SIZE \
-        --image-size $CUSTOM_IMAGE_SIZE \
         --complete-pipeline \
-        --save-to-drive $SAVE_TO_DRIVE
+        $([ "$SAVE_TO_DRIVE" = "true" ] && echo "--save-to-drive")
 }
 
 # Function to show help
 show_help() {
     print_header "YOLOv10 PIPELINE HELP"
+    print_mode "Current execution mode: $EXEC_MODE"
+    echo ""
     echo "Available scenarios:"
     echo "  1. train_new          - Train a new YOLOv10 model from scratch"
     echo "  2. use_existing       - Use existing training results (no retraining)"
@@ -263,19 +307,43 @@ show_help() {
     echo "  8. rknn_only          - Only convert to RKNN"
     echo "  9. all_models         - Run all YOLOv10 variants"
     echo "  10. custom            - Custom configuration (edit script)"
+    echo "  11. local_mode        - Force local mode (10 epochs)"
+    echo "  12. colab_mode        - Force colab mode (200 epochs)"
     echo ""
     echo "Examples:"
     echo "  ./run_yolov10_pipeline.sh train_new"
     echo "  ./run_yolov10_pipeline.sh use_existing"
     echo "  ./run_yolov10_pipeline.sh complete_pipeline"
+    echo "  ./run_yolov10_pipeline.sh local_mode train_new"
+    echo "  ./run_yolov10_pipeline.sh colab_mode train_new"
     echo ""
-    echo "Configuration (edit script to change):"
+    echo "Current Configuration:"
+    echo "  EXECUTION_MODE: $EXEC_MODE"
     echo "  MODEL_VERSION: $MODEL_VERSION"
-    echo "  EPOCHS: $EPOCHS"
+    echo "  EPOCHS: $EPOCHS (${EXEC_MODE} optimized)"
     echo "  BATCH_SIZE: $BATCH_SIZE"
     echo "  IMAGE_SIZE: $IMAGE_SIZE"
     echo "  DATASET_PATH: $DATASET_PATH"
     echo "  SAVE_TO_DRIVE: $SAVE_TO_DRIVE"
+    echo ""
+    if [[ "$EXEC_MODE" == "local" ]]; then
+        echo "🖥️  LOCAL MODE (RTX 3050):"
+        echo "  • 10 epochs for quick testing"
+        echo "  • Smaller batch size (8)"
+        echo "  • Optimized for laptop GPU"
+        echo "  • Results saved locally"
+    else
+        echo "☁️  COLAB MODE (High GPU):"
+        echo "  • 200 epochs for production training"
+        echo "  • Larger batch size (32)"
+        echo "  • Optimized for cloud GPU"
+        echo "  • Results saved to Google Drive"
+    fi
+    echo ""
+    echo "Environment Variables (override defaults):"
+    echo "  EPOCHS=50 ./run_yolov10_pipeline.sh train_new"
+    echo "  BATCH_SIZE=16 ./run_yolov10_pipeline.sh train_new"
+    echo "  IMAGE_SIZE=640 ./run_yolov10_pipeline.sh train_new"
 }
 
 # Main execution
@@ -287,6 +355,25 @@ main() {
     
     # Check prerequisites
     check_prerequisites
+    
+    # Handle mode override arguments
+    if [[ "$1" == "local_mode" ]]; then
+        EXEC_MODE="local"
+        EPOCHS=10
+        BATCH_SIZE=8
+        IMAGE_SIZE=512
+        SAVE_TO_DRIVE=false
+        print_warning "FORCED LOCAL MODE: RTX 3050 optimization"
+        shift  # Remove first argument
+    elif [[ "$1" == "colab_mode" ]]; then
+        EXEC_MODE="colab"
+        EPOCHS=200
+        BATCH_SIZE=32
+        IMAGE_SIZE=640
+        SAVE_TO_DRIVE=true
+        print_success "FORCED COLAB MODE: High GPU optimization"
+        shift  # Remove first argument
+    fi
     
     # Get scenario from command line argument
     SCENARIO=${1:-"help"}

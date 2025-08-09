@@ -2,6 +2,39 @@
 
 A comprehensive instance segmentation system for street litter detection using YOLOv8-YOLOv11 models with fuzzy logic classification for litter quantity estimation.
 
+## 👨‍🎓 Author & Citation
+
+This repository is part of research conducted at **Politeknik Negeri Bandung** by **Trisna Gelar** ([@trisgelar](https://github.com/trisgelar)).
+
+### 📚 Academic Citation
+
+If you use this code or research in your work, please cite our published paper:
+
+```bibtex
+@article{gelar2025systematic,
+  title={A Systematic Literature Review of YOLO and IoT Applications in Smart Waste Management},
+  author={Gelar, Trisna and Fitriani, Sofy and Rachmat, Setiadi},
+  journal={Green Intelligent Systems and Applications},
+  volume={5},
+  number={2},
+  pages={123--139},
+  year={2025},
+  doi={10.53623/gisa.v5i2.706},
+  url={https://tecnoscientifica.com/journal/gisa/article/view/706}
+}
+```
+
+**Full Citation:**
+> Gelar, T., Fitriani, S., & Rachmat, S. (2025). A Systematic Literature Review of YOLO and IoT Applications in Smart Waste Management. *Green Intelligent Systems and Applications*, *5*(2), 123–139. https://doi.org/10.53623/gisa.v5i2.706
+
+**Paper URL:** https://tecnoscientifica.com/journal/gisa/article/view/706
+
+### 🏛️ Institution
+
+**Computer Engineering and Informatics Department**  
+**Politeknik Negeri Bandung**  
+West Java, Indonesia
+
 ## 🎯 Project Overview
 
 This system combines state-of-the-art computer vision techniques with fuzzy logic to detect and classify street litter. It uses YOLO models for instance segmentation and fuzzy logic to categorize litter quantity into three levels: "sedikit" (little), "sedang" (medium), and "banyak" (much).
@@ -815,6 +848,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Roboflow**: Dataset management and annotation
 - **Fuzzy Logic**: Scikit-fuzzy for intelligent classification
 - **Google Colab**: Cloud-based development environment
+- **Research Institution**: Politeknik Negeri Bandung for research support
+- **Academic Contributors**: Sofy Fitriani and Setiadi Rachmat for collaborative research
 
 ## 📞 Support
 

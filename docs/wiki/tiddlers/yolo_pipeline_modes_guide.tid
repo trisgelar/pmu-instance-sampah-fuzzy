@@ -1,0 +1,189 @@
+title: YOLO Pipeline Execution Modes Guide
+type: text/markdown
+tags: yolo pipeline training local colab gpu rtx3050
+created: 20250809125000000
+modified: 20250809125000000
+
+# 🚀 YOLO Pipeline Execution Modes
+
+## Overview
+
+All YOLO pipeline scripts (`run_yolov8_pipeline.sh`, `run_yolov10_pipeline.sh`, `run_yolov11_pipeline.sh`) now support **intelligent environment detection** and **dual execution modes** optimized for different hardware configurations.
+
+## 🎯 **Execution Modes**
+
+### 🖥️ **LOCAL MODE** (RTX 3050 Laptop)
+- **Auto-detected**: When running on local machine
+- **Epochs**: 10 (quick testing)
+- **Batch Size**: 8 (memory optimized)
+- **Image Size**: 512 (reduced processing)
+- **Save Location**: Local storage
+- **Purpose**: Development, testing, quick iterations
+
+### ☁️ **COLAB MODE** (High GPU Cloud)
+- **Auto-detected**: When running on Google Colab
+- **Epochs**: 200 (production training)
+- **Batch Size**: 32 (full performance)
+- **Image Size**: 640 (full quality)
+- **Save Location**: Google Drive
+- **Purpose**: Production training, final models
+
+## 🔍 **Auto-Detection Logic**
+
+The scripts automatically detect the execution environment:
+
+```bash
+# Detects Google Colab environment
+if [[ -n "$COLAB_GPU" ]] || [[ -n "$COLAB_TPU_ADDR" ]] || 
+   [[ "$(hostname)" =~ colab ]] || [[ -f "/content" ]]; then
+    EXEC_MODE="colab"
+else
+    EXEC_MODE="local"
+fi
+```
+
+## 📋 **Usage Examples**
+
+### Basic Usage (Auto-Detection)
+```bash
+# Automatically detects environment and uses appropriate settings
+./run_yolov8_pipeline.sh train_new
+./run_yolov10_pipeline.sh complete_pipeline
+./run_yolov11_pipeline.sh use_existing
+```
+
+### Force Specific Mode
+```bash
+# Force local mode (10 epochs)
+./run_yolov8_pipeline.sh local_mode train_new
+
+# Force colab mode (200 epochs)
+./run_yolov8_pipeline.sh colab_mode complete_pipeline
+
+# Works with any scenario
+./run_yolov11_pipeline.sh local_mode analysis_only
+./run_yolov10_pipeline.sh colab_mode all_models
+```
+
+### Environment Variable Override
+```bash
+# Override specific parameters
+EPOCHS=50 ./run_yolov8_pipeline.sh train_new
+BATCH_SIZE=16 ./run_yolov10_pipeline.sh local_mode train_new
+IMAGE_SIZE=640 ./run_yolov11_pipeline.sh colab_mode train_new
+```
+
+## ⚙️ **Configuration Comparison**
+
+| Parameter | Local Mode | Colab Mode | Purpose |
+|-----------|------------|------------|---------|
+| **Epochs** | 10 | 200 | Training duration |
+| **Batch Size** | 8 | 32 | Memory usage |
+| **Image Size** | 512 | 640 | Processing quality |
+| **Save to Drive** | false | true | Storage location |
+| **Target GPU** | RTX 3050 | T4/V100/A100 | Hardware optimization |
+
+## 🎯 **Benefits**
+
+### For Local Development (RTX 3050)
+- ✅ **Quick Iterations**: 10 epochs for rapid testing
+- ✅ **Memory Efficient**: Smaller batch sizes prevent OOM
+- ✅ **Fast Processing**: Reduced image size for speed
+- ✅ **Local Storage**: No cloud dependencies
+
+### For Production Training (Colab)
+- ✅ **Full Training**: 200 epochs for best model quality
+- ✅ **Maximum Performance**: Large batches utilize cloud GPU
+- ✅ **High Quality**: Full resolution processing
+- ✅ **Cloud Storage**: Automatic Drive backup
+
+## 📊 **Performance Expectations**
+
+### Local Mode (RTX 3050)
+```
+🖥️  LOCAL MODE (RTX 3050):
+  • 10 epochs for quick testing
+  • Smaller batch size (8)
+  • Optimized for laptop GPU
+  • Results saved locally
+  • Training time: ~15-30 minutes
+  • Purpose: Development/testing
+```
+
+### Colab Mode (High GPU)
+```
+☁️  COLAB MODE (High GPU):
+  • 200 epochs for production training
+  • Larger batch size (32)
+  • Optimized for cloud GPU
+  • Results saved to Google Drive
+  • Training time: ~3-6 hours
+  • Purpose: Production models
+```
+
+## 🔧 **Advanced Usage**
+
+### Check Current Mode
+```bash
+./run_yolov8_pipeline.sh  # Shows current mode in help
+```
+
+### Manual Configuration Override
+```bash
+# Mix and match settings
+EPOCHS=100 BATCH_SIZE=16 ./run_yolov8_pipeline.sh local_mode train_new
+```
+
+### All YOLO Versions
+```bash
+# All scripts support the same modes
+./run_yolov8_pipeline.sh colab_mode train_new   # YOLOv8
+./run_yolov10_pipeline.sh colab_mode train_new  # YOLOv10  
+./run_yolov11_pipeline.sh colab_mode train_new  # YOLOv11
+```
+
+## 🐛 **Troubleshooting**
+
+### Force Mode Detection
+If auto-detection fails:
+```bash
+# Explicitly set mode
+./run_yolov8_pipeline.sh local_mode train_new
+./run_yolov8_pipeline.sh colab_mode train_new
+```
+
+### Memory Issues
+Local mode already optimized, but if still having issues:
+```bash
+BATCH_SIZE=4 ./run_yolov8_pipeline.sh local_mode train_new
+```
+
+### Colab Detection Issues
+Check if these environment variables exist in Colab:
+```bash
+echo $COLAB_GPU
+echo $COLAB_TPU_ADDR
+ls -la /content
+```
+
+## 💡 **Best Practices**
+
+1. **Development Workflow**:
+   - Use local mode for testing and debugging
+   - Use colab mode for final training
+
+2. **Resource Management**:
+   - Local mode conserves laptop battery and heat
+   - Colab mode maximizes cloud resources
+
+3. **Model Quality**:
+   - Local mode: Quick validation of approach
+   - Colab mode: Production-quality models
+
+4. **Time Management**:
+   - Local: 15-30 minutes for quick feedback
+   - Colab: 3-6 hours for comprehensive training
+
+---
+
+*This dual-mode system ensures optimal resource utilization across different development environments while maintaining consistent workflow patterns.*
