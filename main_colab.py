@@ -10,6 +10,7 @@ from modules.dataset_manager import DatasetManager
 from modules.model_processor import ModelProcessor
 from modules.rknn_converter import RknnConverter
 from modules.metrics_analyzer import TrainingMetricsAnalyzer
+from modules.yolov8_visualizer_simple import YOLOv8Visualizer
 from modules.inference_visualizer import InferenceVisualizer
 from modules.drive_manager import DriveManager
 from modules.config_manager import ConfigManager
@@ -137,6 +138,13 @@ class WasteDetectionSystemColab:
                 img_size=self.model_config.default_img_size
             )
             logger.info("InferenceVisualizer initialized successfully")
+            
+            # Initialize YOLOv8 specialized visualizer for academic papers
+            self.yolov8_visualizer = YOLOv8Visualizer(
+                base_output_dir="results/inference_outputs", 
+                img_size=self.model_config.default_img_size
+            )
+            logger.info("YOLOv8Visualizer initialized successfully")
             
             self.drive_manager = DriveManager()
             logger.info("DriveManager initialized successfully")
@@ -307,15 +315,47 @@ class WasteDetectionSystemColab:
                     )
                     
                     if inference_results:
+                        # Use specialized YOLOv8 visualizer for structured academic output
+                        if model_version.startswith('v8'):
+                            logger.info("Using YOLOv8 specialized visualizer for academic paper output")
+                            pipeline_results = self.yolov8_visualizer.run_complete_visualization_pipeline(
+                                model_path=model_path_for_inference,
+                                data_yaml_path=data_yaml_path,
+                                num_images=num_inference_images,
+                                conf_threshold=self.model_config.default_conf_threshold,
+                                model_version=model_version
+                            )
+                            
+                            if pipeline_results["status"] == "completed":
+                                total_files = sum(len(files) for files in pipeline_results["generated_files"].values())
+                                logger.info(f"YOLOv8 visualization pipeline completed: {total_files} files generated")
+                                return True
+                            else:
+                                logger.warning(f"YOLOv8 visualization pipeline failed: {pipeline_results.get('error', 'Unknown error')}")
+                                # Fallback to standard visualizer
+                        
+                        # Fallback or standard visualization for other YOLO versions
+                        logger.info("Using standard visualization pipeline")
                         self.inference_visualizer.visualize_inference_results_grid(
                             inference_results, 
-                            title=f"YOLO{model_version} Instance Segmentation Inference"
+                            title=f"YOLO{model_version} Instance Segmentation Inference",
+                            save_only=True  # Save only for better compatibility
                         )
+                        
+                        # Create publication-ready figures for academic papers
+                        pub_files = self.inference_visualizer.create_publication_ready_figures(
+                            inference_results, 
+                            model_version,
+                            title=f"YOLO{model_version} Instance Segmentation"
+                        )
+                        
+                        # Save additional outputs
                         self.inference_visualizer.save_superimposed_images(inference_results, model_version)
                         self.inference_visualizer.save_inference_results_csv(inference_results, model_version)
                         self.inference_visualizer.zip_superimposed_images_folder(model_version)
                         
                         logger.info(f"Inference and visualization completed for YOLO{model_version}")
+                        logger.info(f"Publication figures created: {len(pub_files)} files")
                         return True
                     else:
                         logger.warning(f"No inference results generated for YOLO{model_version}")

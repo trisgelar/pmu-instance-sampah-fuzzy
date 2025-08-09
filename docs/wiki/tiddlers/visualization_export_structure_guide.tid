@@ -1,0 +1,198 @@
+title: Visualization Export Structure Guide
+tags: Documentation Visualization Pipeline
+type: text/vnd.tiddlywiki
+
+!! 📁 Visualization Export Structure & Standards
+
+This guide defines the folder structure, naming conventions, and export settings for visualization and inference results, optimized for academic paper usage.
+
+!! 🗂️ Folder Structure
+
+```
+results/
+├── inference_outputs/
+│   ├── yolov8/
+│   │   ├── metadata/
+│   │   │   ├── inference_summary.json       # Complete metadata
+│   │   │   ├── inference_summary.csv        # Tabular summary
+│   │   │   └── model_info.json              # Model configuration
+│   │   ├── publication/
+│   │   │   ├── figures/
+│   │   │   │   ├── grid_overview.png        # 300 DPI grid layout
+│   │   │   │   ├── grid_overview.pdf        # Vector format
+│   │   │   │   ├── before_after.png         # Comparison figure
+│   │   │   │   ├── before_after.pdf         # Vector format
+│   │   │   │   └── summary_table.png        # Results table
+│   │   │   ├── individual/
+│   │   │   │   ├── img001_original_vs_detected.png
+│   │   │   │   ├── img001_original_vs_detected.pdf
+│   │   │   │   ├── img002_original_vs_detected.png
+│   │   │   │   └── img002_original_vs_detected.pdf
+│   │   │   └── markdown/
+│   │   │       ├── results_report.md        # Auto-generated report
+│   │   │       └── figures_manifest.md      # Figure descriptions
+│   │   ├── annotated_images/
+│   │   │   ├── img001_waste_detected_conf025.png
+│   │   │   ├── img002_waste_detected_conf025.png
+│   │   │   └── ...
+│   │   ├── raw_outputs/
+│   │   │   ├── inference_data.json          # Raw inference results
+│   │   │   └── detection_logs.txt           # Processing logs
+│   │   └── compressed/
+│   │       └── yolov8_inference_complete.zip
+│   ├── yolov10/ (future)
+│   └── yolov11/ (future)
+```
+
+!! 📝 File Naming Conventions
+
+!!! Image Files
+* **Format**: `{category}_{index}_{description}_{settings}.{ext}`
+* **Examples**:
+** `img001_waste_detected_conf025.png` - Annotated detection
+** `img001_original_vs_detected.png` - Before/after comparison
+** `grid_overview_yolov8_6images.png` - Grid layout
+
+!!! Metadata Files
+* **Format**: `{type}_{model}_{timestamp}.{ext}`
+* **Examples**:
+** `inference_summary_yolov8_20250103_1430.json`
+** `model_config_yolov8n_20250103.json`
+
+!!! Publication Files
+* **Format**: `{figure_type}_{model}_{purpose}.{ext}`
+* **Examples**:
+** `comparison_yolov8_paper_figure1.pdf`
+** `results_table_yolov8_paper_table1.png`
+
+!! ⚙️ Export Settings & Standards
+
+!!! Image Quality
+* **DPI**: 300 (publication quality)
+* **Format**: PNG (raster), PDF (vector)
+* **Color Space**: RGB
+* **Compression**: Lossless for PNG, high quality for PDF
+
+!!! Figure Dimensions
+* **Grid Layout**: 16×12 inches (4×3 images grid)
+* **Individual Comparison**: 12×6 inches (side-by-side)
+* **Summary Table**: 10×6 inches (landscape)
+* **Before/After**: 12×10 inches (2×2 grid)
+
+!!! Typography
+* **Title Font**: 16pt Bold
+* **Subtitle Font**: 14pt Bold
+* **Label Font**: 12pt Regular
+* **Caption Font**: 10pt Regular
+* **Font Family**: Arial/Helvetica (sans-serif)
+
+!! 📊 Metadata Schema
+
+!!! JSON Metadata Structure
+```json
+{
+  "experiment_info": {
+    "model_version": "yolov8n",
+    "timestamp": "2025-01-03T14:30:00Z",
+    "dataset": "sampah_fuzzy_v1",
+    "confidence_threshold": 0.25,
+    "image_size": [640, 640]
+  },
+  "processing_settings": {
+    "num_inference_images": 6,
+    "export_dpi": 300,
+    "color_space": "RGB",
+    "visualization_alpha": 0.4
+  },
+  "results_summary": {
+    "total_images_processed": 6,
+    "total_objects_detected": 45,
+    "average_confidence": 0.78,
+    "coverage_range": "5.2%-23.8%",
+    "fuzzy_classifications": {
+      "low": 2,
+      "medium": 3,
+      "high": 1
+    }
+  },
+  "image_results": [
+    {
+      "image_id": "img001",
+      "filename": "test_image_001.jpg",
+      "objects_detected": 8,
+      "total_area_px": 15420,
+      "coverage_percent": 12.5,
+      "fuzzy_class": "medium",
+      "confidence_scores": [0.85, 0.72, 0.91],
+      "class_distribution": {"sampah": 8}
+    }
+  ]
+}
+```
+
+!! 📄 Auto-Generated Markdown Report
+
+!!! Report Template
+```markdown
+# YOLOv8 Inference Results Report
+
+## Experiment Details
+- **Model**: YOLOv8n Instance Segmentation
+- **Date**: 2025-01-03 14:30:00
+- **Dataset**: Sampah Fuzzy v1
+- **Confidence Threshold**: 0.25
+
+## Results Summary
+- **Images Processed**: 6
+- **Total Detections**: 45 objects
+- **Average Confidence**: 78.5%
+- **Coverage Range**: 5.2% - 23.8%
+
+## Figures
+![Grid Overview](figures/grid_overview.png)
+*Figure 1: Overview of detection results across 6 test images*
+
+![Before After Comparison](figures/before_after.png)
+*Figure 2: Before and after comparison showing detection accuracy*
+
+## Detailed Results
+| Image | Objects | Area (px) | Coverage | Fuzzy Class |
+|-------|---------|-----------|----------|-------------|
+| img001 | 8 | 15,420 | 12.5% | Medium |
+| img002 | 5 | 8,234 | 7.8% | Low |
+```
+
+!! 🔧 Implementation Priority
+
+!!! Phase 1: YOLOv8 Focus
+1. ✅ **Folder Structure** - Create organized directory hierarchy
+2. ✅ **Naming Convention** - Implement systematic file naming
+3. ✅ **Export Settings** - 300 DPI, PNG/PDF dual format
+4. ✅ **Metadata Generation** - JSON and CSV summaries
+5. 🔄 **Markdown Reports** - Auto-generated documentation
+
+!!! Phase 2: Extension (Future)
+1. **YOLOv10 Adaptation** - Copy structure with version-specific paths
+2. **YOLOv11 Adaptation** - Extend same pattern
+3. **Cross-Model Comparison** - Comparative visualization tools
+
+!! 💡 Academic Paper Integration
+
+!!! Ready-to-Use Outputs
+* **High-DPI Figures** - Direct insertion into LaTeX/Word
+* **Vector Graphics** - Scalable PDF for journals
+* **Structured Metadata** - Easy table generation
+* **Markdown Reports** - Quick documentation
+* **Organized Assets** - Clear file organization for collaboration
+
+!! 📋 Quality Checklist
+
+Before each export, verify:
+- [ ] 300 DPI resolution for all raster images
+- [ ] PDF vector format for scalable figures
+- [ ] Consistent color scheme across visualizations
+- [ ] Clear, readable text labels (min 10pt)
+- [ ] Complete metadata in JSON format
+- [ ] Organized folder structure
+- [ ] Descriptive file names following convention
+- [ ] Auto-generated markdown report
